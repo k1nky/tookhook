@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package protocol.grpc;
+
+option go_package = "github.com/k1nky/tookhook/pkg/plugin/proto";
+
+message ReceiverSpec {
+    string target = 1;
+    string token = 2;
+    string template = 3;
+}
+
+message IngestSpec {
+    string endpoint = 1;
+    string token = 2;
+}
+
+
+message Data {
+    bytes data = 1;
+}
+
+message ValidateRequest {
+    ReceiverSpec receiver = 1;
+}
+
+message ForwardRequest {
+    ReceiverSpec receiver = 1;
+    Data data = 2;
+}
+
+message ForwardResponse {
+    bytes data = 1;
+}
+
+message EnrichRequest {
+    IngestSpec ingest = 1;
+    Data data = 2;
+}
+
+message EnrichResponse {
+    bytes data = 1;
+}
+
+message Empty {}
+
+service Plugin {
+    rpc Validate(ValidateRequest) returns (Empty);
+    rpc Forward(ForwardRequest) returns (ForwardResponse);
+    rpc Enrich(EnrichRequest) returns (EnrichResponse);
+}
+
+
