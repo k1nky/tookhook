@@ -39,7 +39,7 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	pm := pluginmanager.New()
 	for _, v := range strings.Split(cfg.Plugins, ",") {
 		_, name := path.Split(v)
-		pm.LoadForwarder(ctx, name, v)
+		pm.Load(ctx, name, v)
 	}
 
 	store := database.New(cfg.DarabaseURI, log)

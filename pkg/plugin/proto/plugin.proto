@@ -7,7 +7,6 @@ option go_package = "github.com/k1nky/tookhook/pkg/plugin/proto";
 message ReceiverSpec {
     string target = 1;
     string token = 2;
-    string template = 3;
 }
 
 message IngestSpec {

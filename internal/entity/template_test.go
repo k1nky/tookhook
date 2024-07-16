@@ -10,7 +10,7 @@ func TestTemplateMapKeys(t *testing.T) {
 	templ := `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("It is Select 1 at 2024-07-11T12:40:31.574Z on hostname")
-	got, err := ExecuteTemplate(templ, data)
+	got, err := ExecuteTemplateByJson(templ, data)
 	assert.Equal(t, expected, got)
 	assert.NoError(t, err)
 }
@@ -44,7 +44,7 @@ func TestTemplateEmbeddedKeys(t *testing.T) {
 	  }
 	`)
 	expected := []byte("It is Production Docker")
-	got, err := ExecuteTemplate(templ, data)
+	got, err := ExecuteTemplateByJson(templ, data)
 	assert.Equal(t, expected, got)
 	assert.NoError(t, err)
 }
@@ -53,7 +53,7 @@ func TestLostValues(t *testing.T) {
 	templ := `{{ .message }} and{{ .message2 }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("Select 1 and")
-	got, err := ExecuteTemplate(templ, data)
+	got, err := ExecuteTemplateByJson(templ, data)
 	assert.Equal(t, expected, got)
 	assert.NoError(t, err)
 }
@@ -61,7 +61,7 @@ func TestLostValues(t *testing.T) {
 func TestInvalidJSON(t *testing.T) {
 	templ := `{{ .message }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", `)
-	got, err := ExecuteTemplate(templ, data)
+	got, err := ExecuteTemplateByJson(templ, data)
 	assert.Nil(t, got)
 	assert.Error(t, err)
 }

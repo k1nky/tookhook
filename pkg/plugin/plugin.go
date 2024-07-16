@@ -9,9 +9,8 @@ import (
 )
 
 type Receiver struct {
-	Token    string
-	Target   string
-	Template string
+	Token  string
+	Target string
 }
 
 type IngestEndpoint struct {
@@ -31,7 +30,7 @@ type TookhookPlugin struct {
 
 var Handshake = plugin.HandshakeConfig{
 	ProtocolVersion:  1,
-	MagicCookieKey:   "BASIC_PLUGIN",
+	MagicCookieKey:   "TOOKHOOK_PLUGIN",
 	MagicCookieValue: "hello",
 }
 

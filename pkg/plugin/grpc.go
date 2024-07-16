@@ -13,9 +13,8 @@ type GRPCClient struct{ client proto.PluginClient }
 func (m *GRPCClient) Forward(ctx context.Context, r entity.Receiver, data []byte) ([]byte, error) {
 	_, err := m.client.Forward(ctx, &proto.ForwardRequest{
 		Receiver: &proto.ReceiverSpec{
-			Target:   r.Target,
-			Token:    r.Token,
-			Template: r.Template,
+			Target: r.Target,
+			Token:  r.Token,
 		},
 		Data: &proto.Data{
 			Data: data,
@@ -27,9 +26,8 @@ func (m *GRPCClient) Forward(ctx context.Context, r entity.Receiver, data []byte
 func (m *GRPCClient) Validate(ctx context.Context, r entity.Receiver) error {
 	_, err := m.client.Validate(ctx, &proto.ValidateRequest{
 		Receiver: &proto.ReceiverSpec{
-			Target:   r.Target,
-			Token:    r.Token,
-			Template: r.Template,
+			Target: r.Target,
+			Token:  r.Token,
 		},
 	})
 	return err
@@ -57,18 +55,16 @@ type GRPCServer struct {
 
 func (m *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.Empty, error) {
 	r := Receiver{
-		Token:    req.Receiver.Token,
-		Target:   req.Receiver.Target,
-		Template: req.Receiver.Template,
+		Token:  req.Receiver.Token,
+		Target: req.Receiver.Target,
 	}
 	return &proto.Empty{}, m.Impl.Validate(r)
 }
 
 func (m *GRPCServer) Forward(ctx context.Context, req *proto.ForwardRequest) (*proto.ForwardResponse, error) {
 	r := Receiver{
-		Token:    req.Receiver.Token,
-		Target:   req.Receiver.Target,
-		Template: req.Receiver.Template,
+		Token:  req.Receiver.Token,
+		Target: req.Receiver.Target,
 	}
 	data := req.Data.Data
 	v, err := m.Impl.Forward(r, data)

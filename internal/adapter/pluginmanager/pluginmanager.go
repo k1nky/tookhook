@@ -22,7 +22,7 @@ func New() *Adapter {
 	}
 }
 
-func (a *Adapter) LoadForwarder(ctx context.Context, name string, command string) error {
+func (a *Adapter) Load(ctx context.Context, name string, command string) error {
 	client := hcplugin.NewClient(&hcplugin.ClientConfig{
 		HandshakeConfig: plugin.Handshake,
 		Plugins:         plugin.PluginMap,

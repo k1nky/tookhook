@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -67,12 +69,23 @@ func (a *Adapter) buildRouter() http.Handler {
 	return r
 }
 
+func unescapeBody(data []byte) []byte {
+	s, err := url.QueryUnescape(string(data))
+	if err != nil {
+		return data
+	}
+	return []byte(s)
+}
+
 func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
+	}
+	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
+		data = unescapeBody(data)
 	}
 	if err = a.hooker.Forward(r.Context(), name, data); err != nil {
 		requestId := r.Context().Value(KeyRequestId)
