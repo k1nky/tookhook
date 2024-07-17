@@ -21,14 +21,13 @@ cover:
 	go tool cover -html cover.out -o cover.html
 
 build: gvt 
-	CGO_ENABLED=0 go build -o bin/tookhook cmd/*.go
+	CGO_ENABLED=0 go build -o build/tookhook cmd/*.go
 
 plugin:
-	CGO_ENABLED=0 go build -o bin/pachca plugins/pachca/*.go
+	CGO_ENABLED=0 go build -o build/pachca plugins/pachca/*.go
 
 plugin-dev:
 	go build -o dev/pachca plugins/pachca/*.go
-
 
 docker:
 	docker build -t k1nky/tookhook:latest .

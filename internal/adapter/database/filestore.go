@@ -5,9 +5,7 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/fsnotify/fsnotify"
 	"github.com/k1nky/tookhook/internal/entity"
 	"gopkg.in/yaml.v2"
 )
@@ -26,15 +24,12 @@ func NewFileStore(dsn string, log logger) *FileStore {
 	}
 }
 
-func (a *FileStore) Open(ctx context.Context) (err error) {
-	if err := a.runWatcher(ctx); err != nil {
-		return err
-	}
-	return a.ReadRules(ctx)
+func (fs *FileStore) Open(ctx context.Context) (err error) {
+	return fs.ReadRules(ctx)
 }
 
-func (a *FileStore) ReadRules(ctx context.Context) error {
-	f, err := os.Open(a.DSN)
+func (fs *FileStore) ReadRules(ctx context.Context) error {
+	f, err := os.Open(fs.DSN)
 	if err != nil {
 		return err
 	}
@@ -50,55 +45,19 @@ func (a *FileStore) ReadRules(ctx context.Context) error {
 	if err := rules.Validate(); err != nil {
 		return err
 	}
-	a.rules = rules
+	fs.rules = rules
 	return nil
-
 }
 
-func (a *FileStore) GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error) {
-	var hook *entity.Hook = new(entity.Hook)
-
-	for _, v := range a.rules.Hooks {
+func (fs *FileStore) GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error) {
+	for _, v := range fs.rules.Hooks {
 		if v.Income == name {
-			// TODO: check it
-			*hook = v
-			return hook, nil
+			return &v, nil
 		}
 	}
-	return hook, nil
+	return nil, nil
 }
 
-func (a *FileStore) Close() error {
-	return nil
-}
-
-func (a *FileStore) runWatcher(ctx context.Context) error {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return err
-	}
-	if err := watcher.Add(a.DSN); err != nil {
-		return err
-	}
-	go func() {
-		defer watcher.Close()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case event := <-watcher.Events:
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					if err := a.ReadRules(ctx); err != nil {
-						a.log.Errorf("read rules: %v", err)
-						continue
-					}
-					a.log.Infof("read rules: success")
-				}
-			case err := <-watcher.Errors:
-				a.log.Errorf("rules watcher: %v", err)
-			}
-		}
-	}()
-	time.Sleep(time.Second)
+func (fs *FileStore) Close() error {
 	return nil
 }

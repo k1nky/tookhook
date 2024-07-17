@@ -13,14 +13,7 @@ type Receiver struct {
 	Target string
 }
 
-type IngestEndpoint struct {
-	Endpoint string
-	Token    string
-}
-
 type Plugin interface {
-	Enrich(IngestEndpoint, []byte) ([]byte, error)
-	Validate(Receiver) error
 	Forward(Receiver, []byte) ([]byte, error)
 }
 

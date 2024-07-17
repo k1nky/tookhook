@@ -11,4 +11,5 @@ type logger interface {
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock hookService
 type hookService interface {
 	Forward(ctx context.Context, name string, data []byte) error
+	Reload(ctx context.Context) error
 }

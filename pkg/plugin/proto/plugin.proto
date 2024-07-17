@@ -9,18 +9,9 @@ message ReceiverSpec {
     string token = 2;
 }
 
-message IngestSpec {
-    string endpoint = 1;
-    string token = 2;
-}
-
 
 message Data {
     bytes data = 1;
-}
-
-message ValidateRequest {
-    ReceiverSpec receiver = 1;
 }
 
 message ForwardRequest {
@@ -32,11 +23,6 @@ message ForwardResponse {
     bytes data = 1;
 }
 
-message EnrichRequest {
-    IngestSpec ingest = 1;
-    Data data = 2;
-}
-
 message EnrichResponse {
     bytes data = 1;
 }
@@ -44,9 +30,7 @@ message EnrichResponse {
 message Empty {}
 
 service Plugin {
-    rpc Validate(ValidateRequest) returns (Empty);
     rpc Forward(ForwardRequest) returns (ForwardResponse);
-    rpc Enrich(EnrichRequest) returns (EnrichResponse);
 }
 
 

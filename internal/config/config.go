@@ -1,4 +1,4 @@
-// Пакет config представляет инструменты для работы с конфигурациями сервера и агента
+// Package config provides the server configuration.
 package config
 
 import (
@@ -9,7 +9,7 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-// NetAddress строка вида [<хост>]:<порт> и реализует интерфейс pflag.Value
+// NetAddress is string [<host>]:<port> and implements interface pflag.Value
 type NetAddress string
 
 func (a NetAddress) String() string {
@@ -22,7 +22,7 @@ func (a *NetAddress) Set(s string) error {
 		return err
 	}
 	if len(host) == 0 {
-		// если не указан хост, то используем localhost по умолчанию
+		// use "localhost" by default
 		s = "localhost:" + port
 	}
 	*a = NetAddress(s)
@@ -33,25 +33,26 @@ func (a *NetAddress) Type() string {
 	return "string"
 }
 
-// Config конфигурация агента
+// Config is the server configuration.
 type Config struct {
-	// адрес и порт сервиса: переменная окружения ОС `TOOKHOOK_LISTEN` или флаг `-s`
+	// Listen address and port [<host>]:<port>: environment variable `TOOKHOOK_LISTEN` or flag `-s`
 	Listen NetAddress `env:"TOOKHOOK_LISTEN"`
-	// адрес подключения к базе данных: переменная окружения ОС `TOOKHOOK_DATABASE_URI` или флаг `-d`
+	// DarabaseURI is database connection string: environment variable `TOOKHOOK_DATABASE_URI` or flag `-d`
 	DarabaseURI string `env:"TOOKHOOK_DATABASE_URI"`
-	// уровень логирования: переменная окружения ОС `TOOKHOOK_LOG_LEVEL` или флаг `-l`
+	// LogLevel is log level: environment variable `TOOKHOOK_LOG_LEVEL` or flag `-l`
 	LogLevel string `env:"TOOKHOOK_LOG_LEVEL"`
-	Plugins  string `env:"TOOKHOOK_PLUGINS"`
+	// Plugins is comma separated list of plugins: environment variable `TOOKHOOK_PLUGINS` or flag `-p`
+	Plugins string `env:"TOOKHOOK_PLUGINS"`
 }
 
 func parseFromCmd(c *Config) error {
 	cmd := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
 	listen := NetAddress("localhost:8080")
-	cmd.VarP(&listen, "listen", "s", "адрес и порт сервиса")
-	databaseURI := cmd.StringP("database-uri", "d", "hooks.yml", "адрес подключения к базе данных")
-	logLevel := cmd.StringP("log-level", "l", "info", "уровень логирования")
-	plugins := cmd.StringP("plugins", "p", "", "плагины")
+	cmd.VarP(&listen, "listen", "s", "listen address and port [<host>]:<port>")
+	databaseURI := cmd.StringP("database-uri", "d", "hooks.yml", "database connection string")
+	logLevel := cmd.StringP("log-level", "l", "info", "log level")
+	plugins := cmd.StringP("plugins", "p", "", "comma separated list of plugins")
 
 	if err := cmd.Parse(os.Args[1:]); err != nil {
 		return err
@@ -78,9 +79,8 @@ func parseFromEnv(c *Config) error {
 	return nil
 }
 
-// Parse разбирает настройки из аргументов командной строки
-// и переменных окружения. Переменные окружения имеют более высокий
-// приоритет, чем аргументы.
+// Parse parses the server configuration.
+// Environment variables take precedence over command line arguments.
 func Parse(c *Config) error {
 	if err := parseFromCmd(c); err != nil {
 		return err

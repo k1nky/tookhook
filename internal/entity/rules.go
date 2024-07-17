@@ -6,12 +6,19 @@ import (
 	"strings"
 )
 
-const (
-	ReceiverTypePachca = "pachca"
-	ReceiverTypeNull   = "null"
-)
+type Hook struct {
+	Income   string     `yaml:"income"`
+	Outcome  []Receiver `yaml:"outcome"`
+	Disabled bool       `yaml:"disabled"`
+}
 
-type Templates []Template
+type Receiver struct {
+	Type     string    `yaml:"type"`
+	Token    string    `yaml:"token"`
+	Target   string    `yaml:"target"`
+	Template Templates `yaml:"template"`
+	Disabled bool      `yaml:"disabled"`
+}
 
 type Rules struct {
 	Hooks     []Hook               `yaml:"hooks"`
@@ -24,26 +31,7 @@ type Template struct {
 	On       string `yaml:"on"`
 }
 
-type Hook struct {
-	Income   string     `yaml:"income"`
-	Ingest   Ingest     `yaml:"ingest"`
-	Outcome  []Receiver `yaml:"outcome"`
-	Disabled bool       `yaml:"disabled"`
-}
-
-type Ingest struct {
-	Type     string `yaml:"type"`
-	Token    string `yaml:"token"`
-	Endpoint string `yaml:"endpoint"`
-}
-
-type Receiver struct {
-	Type     string    `yaml:"type"`
-	Token    string    `yaml:"token"`
-	Target   string    `yaml:"target"`
-	Template Templates `yaml:"template"`
-	Disabled bool      `yaml:"disabled"`
-}
+type Templates []Template
 
 func trimLength(s string) int {
 	return len(strings.TrimSpace(s))
@@ -63,8 +51,8 @@ func (r *Rules) Validate() error {
 	return nil
 }
 
-func (tg Templates) Execute(data []byte) ([]byte, error) {
-	for _, t := range tg {
+func (t Templates) Execute(data []byte) ([]byte, error) {
+	for _, t := range t {
 		if ok, _ := regexp.Match(t.On, data); ok {
 			if t.RegExp != "" {
 				re, err := regexp.Compile(t.RegExp)

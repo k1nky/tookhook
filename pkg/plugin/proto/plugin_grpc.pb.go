@@ -19,18 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	Plugin_Validate_FullMethodName = "/protocol.grpc.Plugin/Validate"
-	Plugin_Forward_FullMethodName  = "/protocol.grpc.Plugin/Forward"
-	Plugin_Enrich_FullMethodName   = "/protocol.grpc.Plugin/Enrich"
+	Plugin_Forward_FullMethodName = "/protocol.grpc.Plugin/Forward"
 )
 
 // PluginClient is the client API for Plugin service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
-	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*Empty, error)
 	Forward(ctx context.Context, in *ForwardRequest, opts ...grpc.CallOption) (*ForwardResponse, error)
-	Enrich(ctx context.Context, in *EnrichRequest, opts ...grpc.CallOption) (*EnrichResponse, error)
 }
 
 type pluginClient struct {
@@ -39,16 +35,6 @@ type pluginClient struct {
 
 func NewPluginClient(cc grpc.ClientConnInterface) PluginClient {
 	return &pluginClient{cc}
-}
-
-func (c *pluginClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, Plugin_Validate_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *pluginClient) Forward(ctx context.Context, in *ForwardRequest, opts ...grpc.CallOption) (*ForwardResponse, error) {
@@ -61,23 +47,11 @@ func (c *pluginClient) Forward(ctx context.Context, in *ForwardRequest, opts ...
 	return out, nil
 }
 
-func (c *pluginClient) Enrich(ctx context.Context, in *EnrichRequest, opts ...grpc.CallOption) (*EnrichResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(EnrichResponse)
-	err := c.cc.Invoke(ctx, Plugin_Enrich_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
 type PluginServer interface {
-	Validate(context.Context, *ValidateRequest) (*Empty, error)
 	Forward(context.Context, *ForwardRequest) (*ForwardResponse, error)
-	Enrich(context.Context, *EnrichRequest) (*EnrichResponse, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -85,14 +59,8 @@ type PluginServer interface {
 type UnimplementedPluginServer struct {
 }
 
-func (UnimplementedPluginServer) Validate(context.Context, *ValidateRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
-}
 func (UnimplementedPluginServer) Forward(context.Context, *ForwardRequest) (*ForwardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Forward not implemented")
-}
-func (UnimplementedPluginServer) Enrich(context.Context, *EnrichRequest) (*EnrichResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Enrich not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 
@@ -105,24 +73,6 @@ type UnsafePluginServer interface {
 
 func RegisterPluginServer(s grpc.ServiceRegistrar, srv PluginServer) {
 	s.RegisterService(&Plugin_ServiceDesc, srv)
-}
-
-func _Plugin_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ValidateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PluginServer).Validate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Plugin_Validate_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServer).Validate(ctx, req.(*ValidateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Plugin_Forward_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -143,24 +93,6 @@ func _Plugin_Forward_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Plugin_Enrich_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EnrichRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PluginServer).Enrich(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Plugin_Enrich_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServer).Enrich(ctx, req.(*EnrichRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -169,16 +101,8 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PluginServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Validate",
-			Handler:    _Plugin_Validate_Handler,
-		},
-		{
 			MethodName: "Forward",
 			Handler:    _Plugin_Forward_Handler,
-		},
-		{
-			MethodName: "Enrich",
-			Handler:    _Plugin_Enrich_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

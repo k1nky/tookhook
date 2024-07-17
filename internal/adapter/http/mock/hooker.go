@@ -126,3 +126,17 @@ func (mr *MockhookServiceMockRecorder) Forward(ctx, name, data any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockhookService)(nil).Forward), ctx, name, data)
 }
+
+// Reload mocks base method.
+func (m *MockhookService) Reload(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Reload", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Reload indicates an expected call of Reload.
+func (mr *MockhookServiceMockRecorder) Reload(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reload", reflect.TypeOf((*MockhookService)(nil).Reload), ctx)
+}

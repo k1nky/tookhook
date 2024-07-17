@@ -59,10 +59,13 @@ func (a *Adapter) ListenAndServe(ctx context.Context, addr string) {
 
 func (a *Adapter) buildRouter() http.Handler {
 	r := chi.NewRouter()
-	r.Use(TraceRequest())
 	r.Route("/hook", func(r chi.Router) {
-		r.Use(LoggingMiddleware(a.log))
+		r.Use(TraceRequest(), LoggingMiddleware(a.log))
 		r.Post("/{name}", a.ForwardHook)
+	})
+	r.Route("/-", func(r chi.Router) {
+		r.Use(TraceRequest(), LoggingMiddleware(a.log))
+		r.Get("/reload", a.Reload)
 	})
 	r.Get("/health", a.Health)
 
@@ -100,4 +103,13 @@ func (a *Adapter) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"status": "OK"}`))
+}
+
+func (a *Adapter) Reload(w http.ResponseWriter, r *http.Request) {
+	err := a.hooker.Reload(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

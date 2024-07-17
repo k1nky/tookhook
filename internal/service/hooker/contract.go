@@ -9,6 +9,7 @@ import (
 
 type storage interface {
 	GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error)
+	ReadRules(ctx context.Context) error
 }
 
 type logger interface {

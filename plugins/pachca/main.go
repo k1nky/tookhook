@@ -6,8 +6,6 @@ import (
 
 	hcplugin "github.com/hashicorp/go-plugin"
 	"github.com/k1nky/tookhook/pkg/plugin"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Plugin struct{}
@@ -28,10 +26,6 @@ func (f Plugin) Forward(r plugin.Receiver, data []byte) ([]byte, error) {
 	response, err := p.Send(m)
 	log.Println(r.Target, string(response))
 	return response, err
-}
-
-func (f Plugin) Enrich(plugin.IngestEndpoint, []byte) ([]byte, error) {
-	return nil, status.Error(codes.Unimplemented, "")
 }
 
 func main() {

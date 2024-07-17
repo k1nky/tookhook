@@ -16,8 +16,8 @@ RUN make build \
 
 FROM alpine:3.19
 
-COPY --from=build /src/tookhook /app/
-COPY --from=build /src/pachca /app/
+COPY --from=build /src/build/tookhook /app/
+COPY --from=build /src/build/pachca /app/
 
 EXPOSE 8080
 
