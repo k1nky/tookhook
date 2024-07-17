@@ -33,17 +33,17 @@ type Template struct {
 
 type Templates []Template
 
-func trimLength(s string) int {
-	return len(strings.TrimSpace(s))
+func isEmpty(s string) bool {
+	return len(strings.TrimSpace(s)) > 0
 }
 
 func (r *Rules) Validate() error {
 	for _, hook := range r.Hooks {
-		if trimLength(hook.Income) == 0 {
+		if isEmpty(hook.Income) {
 			return fmt.Errorf("income %w", ErrEmptyValue)
 		}
 		for _, outcome := range hook.Outcome {
-			if trimLength(outcome.Type) == 0 {
+			if isEmpty(outcome.Type) {
 				return fmt.Errorf("outcome type %w", ErrEmptyValue)
 			}
 		}
@@ -54,7 +54,7 @@ func (r *Rules) Validate() error {
 func (t Templates) Execute(data []byte) ([]byte, error) {
 	for _, t := range t {
 		if ok, _ := regexp.Match(t.On, data); ok {
-			if t.RegExp != "" {
+			if !isEmpty(t.RegExp) {
 				re, err := regexp.Compile(t.RegExp)
 				if err != nil {
 					return data, err
