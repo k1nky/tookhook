@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion8
 
 const (
 	Plugin_Forward_FullMethodName = "/protocol.grpc.Plugin/Forward"
+	Plugin_Health_FullMethodName  = "/protocol.grpc.Plugin/Health"
 )
 
 // PluginClient is the client API for Plugin service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
 	Forward(ctx context.Context, in *ForwardRequest, opts ...grpc.CallOption) (*ForwardResponse, error)
+	Health(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type pluginClient struct {
@@ -47,11 +49,22 @@ func (c *pluginClient) Forward(ctx context.Context, in *ForwardRequest, opts ...
 	return out, nil
 }
 
+func (c *pluginClient) Health(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, Plugin_Health_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
 type PluginServer interface {
 	Forward(context.Context, *ForwardRequest) (*ForwardResponse, error)
+	Health(context.Context, *Empty) (*Empty, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -61,6 +74,9 @@ type UnimplementedPluginServer struct {
 
 func (UnimplementedPluginServer) Forward(context.Context, *ForwardRequest) (*ForwardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Forward not implemented")
+}
+func (UnimplementedPluginServer) Health(context.Context, *Empty) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 
@@ -93,6 +109,24 @@ func _Plugin_Forward_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_Health_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).Health(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Plugin_Health_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).Health(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,6 +137,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Forward",
 			Handler:    _Plugin_Forward_Handler,
+		},
+		{
+			MethodName: "Health",
+			Handler:    _Plugin_Health_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

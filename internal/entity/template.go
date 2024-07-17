@@ -6,6 +6,7 @@ import (
 	"html/template"
 )
 
+// ExecuteTemplateByJson render template `templ` with JSON `data`.
 func ExecuteTemplateByJson(templ string, data []byte) ([]byte, error) {
 	t := template.Must(template.New("").Parse(templ))
 	m := map[string]interface{}{}
@@ -20,6 +21,7 @@ func ExecuteTemplateByJson(templ string, data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// ExecuteTemplate render template `templ` with `data`.
 func ExecuteTemplate(templ string, data any) ([]byte, error) {
 	t := template.Must(template.New("").Parse(templ))
 

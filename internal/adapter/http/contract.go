@@ -1,6 +1,10 @@
 package http
 
-import "context"
+import (
+	"context"
+
+	"github.com/k1nky/tookhook/internal/service/hooker"
+)
 
 type logger interface {
 	Errorf(template string, args ...interface{})
@@ -12,4 +16,5 @@ type logger interface {
 type hookService interface {
 	Forward(ctx context.Context, name string, data []byte) error
 	Reload(ctx context.Context) error
+	Status(ctx context.Context) hooker.ServiceStatus
 }

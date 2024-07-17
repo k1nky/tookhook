@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTemplateMapKeys(t *testing.T) {
+func TestExecuteTemplateByJsonMapKeys(t *testing.T) {
 	templ := `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("It is Select 1 at 2024-07-11T12:40:31.574Z on hostname")
@@ -15,7 +15,7 @@ func TestTemplateMapKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTemplateEmbeddedKeys(t *testing.T) {
+func TestExecuteTemplateByJsonEmbeddedKeys(t *testing.T) {
 	templ := `It is {{ .deployment.environmentName }}`
 	data := []byte(`{
 		"uuid" : "fe6aed0c-b672-43c9-a9d8-eb3f81215ab3",
@@ -49,7 +49,7 @@ func TestTemplateEmbeddedKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestLostValues(t *testing.T) {
+func TestExecuteTemplateByJsonLostValues(t *testing.T) {
 	templ := `{{ .message }} and{{ .message2 }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("Select 1 and")
@@ -58,7 +58,7 @@ func TestLostValues(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestInvalidJSON(t *testing.T) {
+func TestExecuteTemplateByJsonInvalidJSON(t *testing.T) {
 	templ := `{{ .message }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", `)
 	got, err := ExecuteTemplateByJson(templ, data)

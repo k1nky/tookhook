@@ -10,20 +10,24 @@ import (
 
 type Plugin struct{}
 
-func (f Plugin) Validate(r plugin.Receiver) error {
+func (p Plugin) Validate(r plugin.Receiver) error {
 	log.Println("from validate")
 	return nil
 }
 
-func (f Plugin) Forward(r plugin.Receiver, data []byte) ([]byte, error) {
+func (p Plugin) Health() error {
+	return nil
+}
+
+func (p Plugin) Forward(r plugin.Receiver, data []byte) ([]byte, error) {
 	target := strings.Split(r.Target, "/")
-	p := NewPachca(r.Token)
+	pachca := NewPachca(r.Token)
 	m := MessagePayload{Message: Message{
 		EntityType: target[0],
 		EntityId:   target[1],
 		Content:    string(data),
 	}}
-	response, err := p.Send(m)
+	response, err := pachca.Send(m)
 	log.Println(r.Target, string(response))
 	return response, err
 }

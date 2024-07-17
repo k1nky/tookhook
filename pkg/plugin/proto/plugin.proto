@@ -9,7 +9,6 @@ message ReceiverSpec {
     string token = 2;
 }
 
-
 message Data {
     bytes data = 1;
 }
@@ -23,14 +22,11 @@ message ForwardResponse {
     bytes data = 1;
 }
 
-message EnrichResponse {
-    bytes data = 1;
-}
-
 message Empty {}
 
 service Plugin {
     rpc Forward(ForwardRequest) returns (ForwardResponse);
+    rpc Health(Empty) returns (Empty);
 }
 
 

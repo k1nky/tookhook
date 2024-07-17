@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	hooker "github.com/k1nky/tookhook/internal/service/hooker"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -139,4 +140,18 @@ func (m *MockhookService) Reload(ctx context.Context) error {
 func (mr *MockhookServiceMockRecorder) Reload(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reload", reflect.TypeOf((*MockhookService)(nil).Reload), ctx)
+}
+
+// Status mocks base method.
+func (m *MockhookService) Status(ctx context.Context) hooker.ServiceStatus {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Status", ctx)
+	ret0, _ := ret[0].(hooker.ServiceStatus)
+	return ret0
+}
+
+// Status indicates an expected call of Status.
+func (mr *MockhookServiceMockRecorder) Status(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockhookService)(nil).Status), ctx)
 }

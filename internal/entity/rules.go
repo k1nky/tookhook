@@ -34,7 +34,7 @@ type Template struct {
 type Templates []Template
 
 func isEmpty(s string) bool {
-	return len(strings.TrimSpace(s)) > 0
+	return len(strings.TrimSpace(s)) == 0
 }
 
 func (r *Rules) Validate() error {

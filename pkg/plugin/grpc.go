@@ -21,6 +21,11 @@ func (m *GRPCClient) Forward(ctx context.Context, r Receiver, data []byte) ([]by
 	return nil, err
 }
 
+func (m *GRPCClient) Health(ctx context.Context) error {
+	_, err := m.client.Health(ctx, nil)
+	return err
+}
+
 type GRPCServer struct {
 	proto.UnimplementedPluginServer
 	Impl Plugin
@@ -34,4 +39,9 @@ func (m *GRPCServer) Forward(ctx context.Context, req *proto.ForwardRequest) (*p
 	data := req.Data.Data
 	v, err := m.Impl.Forward(r, data)
 	return &proto.ForwardResponse{Data: v}, err
+}
+
+func (m *GRPCServer) Health(ctx context.Context, req *proto.Empty) (*proto.Empty, error) {
+	err := m.Impl.Health()
+	return nil, err
 }

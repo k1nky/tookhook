@@ -36,11 +36,14 @@ func main() {
 }
 
 func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
-	pm := pluginmanager.New()
+	pm := pluginmanager.New(log)
 	for _, v := range strings.Split(cfg.Plugins, ",") {
 		_, name := path.Split(v)
-		pm.Load(ctx, name, v)
+		if err := pm.Load(ctx, name, v); err != nil {
+			panic(err)
+		}
 	}
+	pm.Run(ctx)
 
 	store := database.New(cfg.DarabaseURI, log)
 	if err := store.Open(ctx); err != nil {

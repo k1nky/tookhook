@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -101,8 +102,18 @@ func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 
 func (a *Adapter) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
+	pluginstatus := a.hooker.Status(r.Context())
+	response := make(map[string]interface{})
+	response["status"] = "OK"
+	response["hooker"] = pluginstatus
+	body, err := json.Marshal(response)
+	if err != nil {
+		a.log.Errorf("%v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"status": "OK"}`))
+	w.Write([]byte(body))
 }
 
 func (a *Adapter) Reload(w http.ResponseWriter, r *http.Request) {

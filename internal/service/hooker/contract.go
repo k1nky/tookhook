@@ -19,4 +19,5 @@ type logger interface {
 
 type pluginmanager interface {
 	Get(name string) *plugin.GRPCClient
+	Status() map[string]bool
 }

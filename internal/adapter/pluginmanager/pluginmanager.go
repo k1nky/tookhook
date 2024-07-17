@@ -2,24 +2,34 @@ package pluginmanager
 
 import (
 	"context"
-	"fmt"
 	"os/exec"
+	"sync"
 	"time"
 
 	hcplugin "github.com/hashicorp/go-plugin"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
-type PluginsList map[string]*plugin.GRPCClient
+type pluginsList map[string]*plugin.GRPCClient
+type statusList map[string]bool
 
 type Adapter struct {
-	plugins PluginsList
+	log        logger
+	plugins    pluginsList
+	lockStatus sync.RWMutex
+	status     statusList
 }
 
-func New() *Adapter {
+func New(log logger) *Adapter {
 	return &Adapter{
-		plugins: make(PluginsList),
+		log:     log,
+		plugins: make(pluginsList),
+		status:  make(statusList),
 	}
+}
+
+func (a *Adapter) Run(ctx context.Context) {
+	a.runWathcer(ctx)
 }
 
 func (a *Adapter) Load(ctx context.Context, name string, command string) error {
@@ -46,23 +56,39 @@ func (a *Adapter) Load(ctx context.Context, name string, command string) error {
 		<-ctx.Done()
 		client.Kill()
 	}()
-	go func() {
-		t := time.NewTicker(1 * time.Minute)
-		defer t.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-t.C:
-				if err := rpcClient.Ping(); err != nil {
-					fmt.Println(err)
-				}
-			}
-		}
-	}()
 	return nil
 }
 
-func (svc *Adapter) Get(name string) *plugin.GRPCClient {
-	return svc.plugins[name]
+func (a *Adapter) runWathcer(ctx context.Context) {
+	t := time.NewTicker(time.Minute)
+	go func() {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			a.lockStatus.Lock()
+			for k, v := range a.plugins {
+				err := v.Health(ctx)
+				if err != nil {
+					a.log.Errorf("plugin manager watcher: %v", err)
+				}
+				a.status[k] = err == nil
+			}
+			a.lockStatus.Unlock()
+		}
+	}()
+}
+
+func (a *Adapter) Status() map[string]bool {
+	status := make(map[string]bool)
+	a.lockStatus.Lock()
+	defer a.lockStatus.Unlock()
+	for k, v := range a.status {
+		status[k] = v
+	}
+	return status
+}
+
+func (a *Adapter) Get(name string) *plugin.GRPCClient {
+	return a.plugins[name]
 }

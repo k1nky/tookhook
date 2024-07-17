@@ -15,6 +15,7 @@ type Receiver struct {
 
 type Plugin interface {
 	Forward(Receiver, []byte) ([]byte, error)
+	Health() error
 }
 
 type TookhookPlugin struct {

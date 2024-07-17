@@ -18,6 +18,10 @@ type Service struct {
 	log   logger
 }
 
+type ServiceStatus struct {
+	Plugins map[string]bool `json:"plugins"`
+}
+
 func New(store storage, pm pluginmanager, log logger) *Service {
 	return &Service{
 		store: store,
@@ -69,6 +73,13 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		}
 	}
 	return nil
+}
+
+func (svc *Service) Status(ctx context.Context) ServiceStatus {
+	pluginStatus := svc.pm.Status()
+	return ServiceStatus{
+		Plugins: pluginStatus,
+	}
 }
 
 func pluginReceiver(r entity.Receiver) plugin.Receiver {
