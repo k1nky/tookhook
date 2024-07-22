@@ -4,9 +4,12 @@ package protocol.grpc;
 
 option go_package = "github.com/k1nky/tookhook/pkg/plugin/proto";
 
+message PluginOptions {
+    map<string, string> values = 1;
+}
+
 message ReceiverSpec {
-    string target = 1;
-    string token = 2;
+    PluginOptions options = 3;
 }
 
 message Data {
@@ -16,6 +19,7 @@ message Data {
 message ForwardRequest {
     ReceiverSpec receiver = 1;
     Data data = 2;
+    PluginOptions plugin_options = 3;
 }
 
 message ForwardResponse {

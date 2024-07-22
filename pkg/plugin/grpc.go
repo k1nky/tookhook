@@ -11,8 +11,9 @@ type GRPCClient struct{ client proto.PluginClient }
 func (m *GRPCClient) Forward(ctx context.Context, r Receiver, data []byte) ([]byte, error) {
 	_, err := m.client.Forward(ctx, &proto.ForwardRequest{
 		Receiver: &proto.ReceiverSpec{
-			Target: r.Target,
-			Token:  r.Token,
+			Options: &proto.PluginOptions{
+				Values: r.Options,
+			},
 		},
 		Data: &proto.Data{
 			Data: data,
@@ -33,8 +34,7 @@ type GRPCServer struct {
 
 func (m *GRPCServer) Forward(ctx context.Context, req *proto.ForwardRequest) (*proto.ForwardResponse, error) {
 	r := Receiver{
-		Token:  req.Receiver.Token,
-		Target: req.Receiver.Target,
+		Options: req.Receiver.Options.Values,
 	}
 	data := req.Data.Data
 	v, err := m.Impl.Forward(r, data)

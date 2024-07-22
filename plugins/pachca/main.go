@@ -20,15 +20,17 @@ func (p Plugin) Health() error {
 }
 
 func (p Plugin) Forward(r plugin.Receiver, data []byte) ([]byte, error) {
-	target := strings.Split(r.Target, "/")
-	pachca := NewPachca(r.Token)
+	token := r.Options["token"]
+	chat := r.Options["chat"]
+	target := strings.Split(chat, "/")
+	pachca := NewPachca(token)
 	m := MessagePayload{Message: Message{
 		EntityType: target[0],
 		EntityId:   target[1],
 		Content:    string(data),
 	}}
 	response, err := pachca.Send(m)
-	log.Println(r.Target, string(response))
+	log.Println(chat, string(response))
 	return response, err
 }
 

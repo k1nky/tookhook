@@ -9,8 +9,7 @@ import (
 )
 
 type Receiver struct {
-	Token  string
-	Target string
+	Options map[string]string
 }
 
 type Plugin interface {

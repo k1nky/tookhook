@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
 const (
@@ -50,7 +49,7 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 	}
 	for _, r := range rule.Outcome {
 		if r.Disabled {
-			svc.log.Debugf("reciever %s %s skipped", r.Type, r.Target)
+			svc.log.Debugf("reciever %s %s skipped", r.Type)
 			continue
 		}
 		content, err := r.Content(data)
@@ -63,8 +62,8 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		}
 		fwd := svc.pm.Get(r.Type)
 		if fwd != nil {
-			if _, err := fwd.Forward(ctx, pluginReceiver(r), content); err != nil {
-				svc.log.Errorf("send to %s %s failed: %v", r.Type, r.Target, err)
+			if _, err := fwd.Forward(ctx, r.AsPluginReceiver(), content); err != nil {
+				svc.log.Errorf("send to %s %s failed: %v", r.Type, err)
 			}
 		}
 	}
@@ -73,11 +72,4 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 
 func (svc *Service) Health(ctx context.Context) entity.Status {
 	return entity.StatusOk
-}
-
-func pluginReceiver(r entity.Receiver) plugin.Receiver {
-	return plugin.Receiver{
-		Token:  r.Token,
-		Target: r.Target,
-	}
 }

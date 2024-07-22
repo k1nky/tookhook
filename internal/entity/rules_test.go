@@ -17,7 +17,8 @@ hooks:
     outcome:
       - type: pachca
         template: *jira
-        target: discussion/9913735
+        options:
+          chat: discussion/9913735
 
 `
 	r := Rules{}

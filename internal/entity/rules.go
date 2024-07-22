@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
 // Hook is the hook specification.
@@ -20,10 +22,8 @@ type Hook struct {
 type Receiver struct {
 	// Type is actually plugin name that will process incoming data.
 	// TODO: rename to `plugin`
-	Type string `yaml:"type"`
-	// TODO: move to `additional options` field.
-	Token  string `yaml:"token"`
-	Target string `yaml:"target"`
+	Type    string            `yaml:"type"`
+	Options map[string]string `yaml:"options"`
 	// List of template that will be executed before being passed to the plugin.
 	Template Templates `yaml:"template"`
 	// If true the receiver will be skipped.
@@ -89,4 +89,10 @@ func (r Receiver) Content(data []byte) ([]byte, error) {
 		return data, nil
 	}
 	return r.Template.Execute(data)
+}
+
+func (r Receiver) AsPluginReceiver() plugin.Receiver {
+	return plugin.Receiver{
+		Options: r.Options,
+	}
 }
