@@ -6,22 +6,35 @@ import (
 	"strings"
 )
 
+// Hook is the hook specification.
 type Hook struct {
-	Income   string     `yaml:"income"`
-	Outcome  []Receiver `yaml:"outcome"`
-	Disabled bool       `yaml:"disabled"`
+	// Incoming webhook request name.
+	Income string `yaml:"income"`
+	// List of receivers.
+	Outcome []Receiver `yaml:"outcome"`
+	// If true the hook will be skipped and the incoming request will be dropped.
+	Disabled bool `yaml:"disabled"`
 }
 
+// Receiver is the component that will receive data from the webhook.
 type Receiver struct {
-	Type     string    `yaml:"type"`
-	Token    string    `yaml:"token"`
-	Target   string    `yaml:"target"`
+	// Type is actually plugin name that will process incoming data.
+	// TODO: rename to `plugin`
+	Type string `yaml:"type"`
+	// TODO: move to `additional options` field.
+	Token  string `yaml:"token"`
+	Target string `yaml:"target"`
+	// List of template that will be executed before being passed to the plugin.
 	Template Templates `yaml:"template"`
-	Disabled bool      `yaml:"disabled"`
+	// If true the receiver will be skipped.
+	Disabled bool `yaml:"disabled"`
 }
 
+// Rules define how to process incoming webhooks.
 type Rules struct {
-	Hooks     []Hook               `yaml:"hooks"`
+	// Hooks are a list of rules by which webhooks will be processed.
+	Hooks []Hook `yaml:"hooks"`
+	// Templates is named collection of templates. Нook rules can reference them.
 	Templates map[string]Templates `yaml:"templates"`
 }
 

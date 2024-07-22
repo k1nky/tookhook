@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -20,14 +19,16 @@ const (
 )
 
 type Adapter struct {
-	hooker hookService
-	log    logger
+	hooker  hookService
+	monitor monitorService
+	log     logger
 }
 
-func New(log logger, hooker hookService) *Adapter {
+func New(log logger, hooker hookService, monitor monitorService) *Adapter {
 	a := &Adapter{
-		log:    log,
-		hooker: hooker,
+		log:     log,
+		hooker:  hooker,
+		monitor: monitor,
 	}
 
 	return a
@@ -73,26 +74,36 @@ func (a *Adapter) buildRouter() http.Handler {
 	return r
 }
 
-func unescapeBody(data []byte) []byte {
-	s, err := url.QueryUnescape(string(data))
-	if err != nil {
-		return data
-	}
-	return []byte(s)
-}
-
 func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
+	var (
+		data []byte
+		err  error
+	)
+	requestId := r.Context().Value(KeyRequestId)
 	name := chi.URLParam(r, "name")
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
+
+	badRequest := func(error) {
+		a.log.Errorf("request id=%d has bad data: %v", requestId, err)
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	}
-	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
-		data = unescapeBody(data)
+
+	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form") {
+		if err := r.ParseForm(); err != nil {
+			badRequest(err)
+			return
+		}
+		if data, err = json.Marshal(r.Form); err != nil {
+			badRequest(err)
+			return
+		}
+	} else {
+		data, err = io.ReadAll(r.Body)
+		if err != nil {
+			badRequest(err)
+			return
+		}
 	}
 	if err = a.hooker.Forward(r.Context(), name, data); err != nil {
-		requestId := r.Context().Value(KeyRequestId)
 		a.log.Errorf("request id=%d failed %v", requestId, err)
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -102,11 +113,8 @@ func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 
 func (a *Adapter) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
-	pluginstatus := a.hooker.Status(r.Context())
-	response := make(map[string]interface{})
-	response["status"] = "OK"
-	response["hooker"] = pluginstatus
-	body, err := json.Marshal(response)
+	status := a.monitor.Status(r.Context())
+	body, err := json.Marshal(status)
 	if err != nil {
 		a.log.Errorf("%v", err)
 		w.WriteHeader(http.StatusInternalServerError)

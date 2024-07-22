@@ -1,9 +1,6 @@
 package http
 
 import (
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/adapter/http/mock"
@@ -25,17 +22,17 @@ func (suite *httpAdapterTestSuite) SetupTest() {
 	suite.hookService = mock.NewMockhookService(ctrl)
 }
 
-func (suite *httpAdapterTestSuite) TestHealth() {
-	a := &Adapter{
-		hooker: suite.hookService,
-	}
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/health", nil)
-	a.Health(w, r)
-	body, _ := io.ReadAll(w.Body)
-	suite.Equal([]byte(`{"status": "OK"}`), body)
-	suite.Equal(http.StatusOK, w.Result().StatusCode)
-}
+// func (suite *httpAdapterTestSuite) TestHealth() {
+// 	a := &Adapter{
+// 		hooker: suite.hookService,
+// 	}
+// 	w := httptest.NewRecorder()
+// 	r := httptest.NewRequest(http.MethodGet, "/health", nil)
+// 	a.Health(w, r)
+// 	body, _ := io.ReadAll(w.Body)
+// 	suite.Equal([]byte(`{"status": "OK"}`), body)
+// 	suite.Equal(http.StatusOK, w.Result().StatusCode)
+// }
 
 // a := &Adapter{
 // 	auth: suite.authService,

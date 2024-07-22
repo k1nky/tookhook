@@ -15,6 +15,7 @@ import (
 	"github.com/k1nky/tookhook/internal/config"
 	"github.com/k1nky/tookhook/internal/logger"
 	"github.com/k1nky/tookhook/internal/service/hooker"
+	"github.com/k1nky/tookhook/internal/service/monitor"
 )
 
 func main() {
@@ -51,7 +52,8 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		return
 	}
 	hookService := hooker.New(store, pm, log)
+	monitorService := monitor.New(pm, hookService)
 
-	httpServer := httphandler.New(log, hookService)
+	httpServer := httphandler.New(log, hookService, monitorService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
 }

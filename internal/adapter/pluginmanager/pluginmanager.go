@@ -7,24 +7,26 @@ import (
 	"time"
 
 	hcplugin "github.com/hashicorp/go-plugin"
+	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
-type pluginsList map[string]*plugin.GRPCClient
-type statusList map[string]bool
+type pluginInstance struct {
+	client     *hcplugin.Client
+	command    string
+	name       string
+	grpcClient *plugin.GRPCClient
+}
 
 type Adapter struct {
-	log        logger
-	plugins    pluginsList
-	lockStatus sync.RWMutex
-	status     statusList
+	log     logger
+	plugins sync.Map
+	status  sync.Map
 }
 
 func New(log logger) *Adapter {
 	return &Adapter{
-		log:     log,
-		plugins: make(pluginsList),
-		status:  make(statusList),
+		log: log,
 	}
 }
 
@@ -51,44 +53,63 @@ func (a *Adapter) Load(ctx context.Context, name string, command string) error {
 		client.Kill()
 		return nil
 	}
-	a.plugins[name] = raw.(*plugin.GRPCClient)
-	go func() {
-		<-ctx.Done()
-		client.Kill()
-	}()
+	// TODO: check type interface
+	instance := pluginInstance{
+		client:     client,
+		command:    command,
+		name:       name,
+		grpcClient: raw.(*plugin.GRPCClient),
+	}
+	a.plugins.Store(name, instance)
+	a.checkPluginHealth(ctx, name)
+
 	return nil
+}
+
+func (a *Adapter) checkPluginHealth(ctx context.Context, name string) {
+	client := a.Get(name)
+	if client == nil {
+		return
+	}
+	err := client.Health(ctx)
+	if err != nil {
+		a.log.Errorf("plugin manager watcher: %v", err)
+		a.status.Store(name, entity.StatusFailed)
+	} else {
+		a.status.Store(name, entity.StatusOk)
+	}
 }
 
 func (a *Adapter) runWathcer(ctx context.Context) {
 	t := time.NewTicker(time.Minute)
 	go func() {
+		defer t.Stop()
 		select {
 		case <-ctx.Done():
 			return
 		case <-t.C:
-			a.lockStatus.Lock()
-			for k, v := range a.plugins {
-				err := v.Health(ctx)
-				if err != nil {
-					a.log.Errorf("plugin manager watcher: %v", err)
-				}
-				a.status[k] = err == nil
-			}
-			a.lockStatus.Unlock()
+			a.plugins.Range(func(key, value any) bool {
+				pluginName := key.(string)
+				a.checkPluginHealth(ctx, pluginName)
+				return true
+			})
 		}
 	}()
 }
 
-func (a *Adapter) Status() map[string]bool {
-	status := make(map[string]bool)
-	a.lockStatus.Lock()
-	defer a.lockStatus.Unlock()
-	for k, v := range a.status {
-		status[k] = v
-	}
+func (a *Adapter) Health(ctx context.Context) entity.PluginsStatus {
+	status := make(entity.PluginsStatus)
+	a.status.Range(func(key, value any) bool {
+		status[key.(string)] = value.(entity.Status)
+		return true
+	})
 	return status
 }
 
 func (a *Adapter) Get(name string) *plugin.GRPCClient {
-	return a.plugins[name]
+	c, ok := a.plugins.Load(name)
+	if !ok {
+		return nil
+	}
+	return c.(pluginInstance).grpcClient
 }
