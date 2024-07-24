@@ -7,14 +7,18 @@ import (
 )
 
 type Service struct {
-	pm        pluginmanager
 	hookerSvc hookService
+	log       logger
+	pm        pluginmanager
+	store     storage
 }
 
-func New(pm pluginmanager, hookerSvc hookService) *Service {
+func New(pm pluginmanager, hookerSvc hookService, store storage, log logger) *Service {
 	return &Service{
-		pm:        pm,
 		hookerSvc: hookerSvc,
+		log:       log,
+		pm:        pm,
+		store:     store,
 	}
 }
 

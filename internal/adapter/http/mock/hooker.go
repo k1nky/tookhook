@@ -128,18 +128,41 @@ func (mr *MockhookServiceMockRecorder) Forward(ctx, name, data any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockhookService)(nil).Forward), ctx, name, data)
 }
 
-// Reload mocks base method.
-func (m *MockhookService) Reload(ctx context.Context) error {
+// MockrulesService is a mock of rulesService interface.
+type MockrulesService struct {
+	ctrl     *gomock.Controller
+	recorder *MockrulesServiceMockRecorder
+}
+
+// MockrulesServiceMockRecorder is the mock recorder for MockrulesService.
+type MockrulesServiceMockRecorder struct {
+	mock *MockrulesService
+}
+
+// NewMockrulesService creates a new mock instance.
+func NewMockrulesService(ctrl *gomock.Controller) *MockrulesService {
+	mock := &MockrulesService{ctrl: ctrl}
+	mock.recorder = &MockrulesServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockrulesService) EXPECT() *MockrulesServiceMockRecorder {
+	return m.recorder
+}
+
+// Load mocks base method.
+func (m *MockrulesService) Load(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Reload", ctx)
+	ret := m.ctrl.Call(m, "Load", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Reload indicates an expected call of Reload.
-func (mr *MockhookServiceMockRecorder) Reload(ctx any) *gomock.Call {
+// Load indicates an expected call of Load.
+func (mr *MockrulesServiceMockRecorder) Load(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Reload", reflect.TypeOf((*MockhookService)(nil).Reload), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Load", reflect.TypeOf((*MockrulesService)(nil).Load), ctx)
 }
 
 // MockmonitorService is a mock of monitorService interface.

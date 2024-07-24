@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -21,13 +23,15 @@ type Hook struct {
 // Receiver is the component that will receive data from the webhook.
 type Receiver struct {
 	// Type is actually plugin name that will process incoming data.
-	// TODO: rename to `plugin`
-	Type    string            `yaml:"type"`
-	Options map[string]string `yaml:"options"`
+	Type string `yaml:"type"`
+	// Options will be passed to the plugin.
+	Options map[string]interface{} `yaml:"options"`
 	// List of template that will be executed before being passed to the plugin.
 	Template Templates `yaml:"template"`
 	// If true the receiver will be skipped.
 	Disabled bool `yaml:"disabled"`
+	// Serialized value of `Options`
+	options []byte
 }
 
 // Rules define how to process incoming webhooks.
@@ -50,15 +54,22 @@ func isEmpty(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
 }
 
+// Validate checks the rules and returns en error if there is one.
 func (r *Rules) Validate() error {
 	for _, hook := range r.Hooks {
 		if isEmpty(hook.Income) {
 			return fmt.Errorf("income %w", ErrEmptyValue)
 		}
-		for _, outcome := range hook.Outcome {
+		for i, outcome := range hook.Outcome {
 			if isEmpty(outcome.Type) {
 				return fmt.Errorf("outcome type %w", ErrEmptyValue)
 			}
+			buf := bytes.NewBuffer(nil)
+			if err := json.NewEncoder(buf).Encode(outcome.Options); err != nil {
+				// should not happen
+				return fmt.Errorf("outcome options has %w", err)
+			}
+			hook.Outcome[i].options = buf.Bytes()
 		}
 	}
 	return nil
@@ -93,6 +104,6 @@ func (r Receiver) Content(data []byte) ([]byte, error) {
 
 func (r Receiver) AsPluginReceiver() plugin.Receiver {
 	return plugin.Receiver{
-		Options: r.Options,
+		Options: r.options,
 	}
 }

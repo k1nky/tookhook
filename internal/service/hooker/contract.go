@@ -7,9 +7,8 @@ import (
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
-type storage interface {
-	GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error)
-	ReadRules(ctx context.Context) error
+type rulesStore interface {
+	GetIncomeHookByName(ctx context.Context, name string) *entity.Hook
 }
 
 type logger interface {
@@ -18,5 +17,5 @@ type logger interface {
 }
 
 type pluginmanager interface {
-	Get(name string) *plugin.GRPCClient
+	Get(name string) plugin.Plugin
 }

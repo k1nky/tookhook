@@ -8,38 +8,25 @@ import (
 )
 
 const (
-	ReceiverTypeLog = "log"
+	ReceiverTypeLog = "!log"
 )
 
 type Service struct {
-	store storage
-	pm    pluginmanager
-	log   logger
+	rs  rulesStore
+	pm  pluginmanager
+	log logger
 }
 
-func New(store storage, pm pluginmanager, log logger) *Service {
+func New(rs rulesStore, pm pluginmanager, log logger) *Service {
 	return &Service{
-		store: store,
-		pm:    pm,
-		log:   log,
+		rs:  rs,
+		pm:  pm,
+		log: log,
 	}
-}
-
-func (svc *Service) Reload(ctx context.Context) error {
-	err := svc.store.ReadRules(ctx)
-	if err != nil {
-		svc.log.Errorf("reload rules: %v", err)
-	} else {
-		svc.log.Debugf("reload rules: success")
-	}
-	return err
 }
 
 func (svc *Service) Forward(ctx context.Context, name string, data []byte) error {
-	rule, err := svc.store.GetIncomeHookByName(ctx, name)
-	if err != nil {
-		return err
-	}
+	rule := svc.rs.GetIncomeHookByName(ctx, name)
 	if rule == nil {
 		return fmt.Errorf("income rule %s: %w", name, entity.ErrNotFound)
 	}

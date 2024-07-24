@@ -106,7 +106,7 @@ func (a *Adapter) Health(ctx context.Context) entity.PluginsStatus {
 	return status
 }
 
-func (a *Adapter) Get(name string) *plugin.GRPCClient {
+func (a *Adapter) Get(name string) plugin.Plugin {
 	c, ok := a.plugins.Load(name)
 	if !ok {
 		return nil

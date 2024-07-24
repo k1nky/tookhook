@@ -13,10 +13,7 @@ type Database interface {
 	Open(ctx context.Context) (err error)
 	// Close connection to database.
 	Close() error
-	// ReadRules reads the rules from database to memory.
-	ReadRules(ctx context.Context) error
-	// GetIncomeHookByName returns a hook rule by the name.
-	GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error)
+	GetRules(ctx context.Context) (*entity.Rules, error)
 }
 
 type logger interface {
