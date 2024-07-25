@@ -6,13 +6,16 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
+// TODO: impl. hclog.Logger interface
+
 type Logger struct {
 	hcLogger hclog.Logger
 }
 
-func New() *Logger {
+func New(name string) *Logger {
 	l := hclog.New(&hclog.LoggerOptions{
-		Name: "tookhook",
+		Name: name,
+		// Exclude: ,
 	})
 	return &Logger{
 		hcLogger: l,
@@ -42,4 +45,8 @@ func (l *Logger) Errorf(template string, args ...interface{}) {
 
 func (l *Logger) Warnf(template string, args ...interface{}) {
 	l.hcLogger.Warn(fmt.Sprintf(template, args...))
+}
+
+func (l *Logger) AsHCLogger() hclog.Logger {
+	return l.hcLogger
 }

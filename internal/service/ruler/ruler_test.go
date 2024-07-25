@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	log "github.com/k1nky/tookhook/internal/logger"
 	"github.com/k1nky/tookhook/internal/service/ruler/mock"
+	log "github.com/k1nky/tookhook/pkg/logger"
 	"github.com/k1nky/tookhook/pkg/plugin"
 	pluginmock "github.com/k1nky/tookhook/pkg/plugin/mock"
 	"github.com/stretchr/testify/suite"

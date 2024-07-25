@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	log "github.com/k1nky/tookhook/internal/logger"
+	log "github.com/k1nky/tookhook/pkg/logger"
 	"github.com/stretchr/testify/suite"
 )
 

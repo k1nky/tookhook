@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	log "github.com/k1nky/tookhook/internal/logger"
 	"github.com/k1nky/tookhook/internal/service/monitor/mock"
+	log "github.com/k1nky/tookhook/pkg/logger"
 
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"

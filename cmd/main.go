@@ -13,15 +13,20 @@ import (
 	httphandler "github.com/k1nky/tookhook/internal/adapter/http"
 	"github.com/k1nky/tookhook/internal/adapter/pluginmanager"
 	"github.com/k1nky/tookhook/internal/config"
-	"github.com/k1nky/tookhook/internal/logger"
 	"github.com/k1nky/tookhook/internal/service/hooker"
 	"github.com/k1nky/tookhook/internal/service/monitor"
 	"github.com/k1nky/tookhook/internal/service/ruler"
+	"github.com/k1nky/tookhook/pkg/logger"
+)
+
+const (
+	LoggerName         = "tookhook"
+	LoggerDefaultLevel = "debug"
 )
 
 func main() {
-	log := logger.New()
-	log.SetLevel("debug")
+	log := logger.New(LoggerName)
+	log.SetLevel(LoggerDefaultLevel)
 
 	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	cfg := config.Config{}
