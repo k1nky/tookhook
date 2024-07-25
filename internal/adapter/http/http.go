@@ -19,16 +19,18 @@ const (
 )
 
 type Adapter struct {
-	hooker  hookService
+	hs      hookService
 	monitor monitorService
 	log     logger
+	rs      rulesService
 }
 
-func New(log logger, hooker hookService, monitor monitorService) *Adapter {
+func New(log logger, hooker hookService, monitor monitorService, rs rulesService) *Adapter {
 	a := &Adapter{
 		log:     log,
-		hooker:  hooker,
+		hs:      hooker,
 		monitor: monitor,
+		rs:      rs,
 	}
 
 	return a
@@ -103,7 +105,7 @@ func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err = a.hooker.Forward(r.Context(), name, data); err != nil {
+	if err = a.hs.Forward(r.Context(), name, data); err != nil {
 		a.log.Errorf("request id=%d failed %v", requestId, err)
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -125,7 +127,7 @@ func (a *Adapter) Health(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Adapter) Reload(w http.ResponseWriter, r *http.Request) {
-	err := a.hooker.Reload(r.Context())
+	err := a.rs.Load(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -24,10 +24,10 @@ build: gvt
 	CGO_ENABLED=0 go build -o build/tookhook cmd/*.go
 
 plugin:
-	CGO_ENABLED=0 go build -o build/pachca plugins/pachca/*.go
+	CGO_ENABLED=0 go build -o build/pachca plugins/pachca/cmd/*.go
 
 plugin-dev:
-	go build -o dev/pachca plugins/pachca/*.go
+	go build -o dev/pachca plugins/pachca/cmd/*.go
 
 docker:
 	docker build -t k1nky/tookhook:latest .
@@ -41,3 +41,4 @@ prepare:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@latest

@@ -4,27 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
 )
-
-func TestParseRules(t *testing.T) {
-	rules := `
-templates:
-  jira: &jira
-    - template: "{{ .message }}"
-hooks:
-  - income: test
-    outcome:
-      - type: pachca
-        template: *jira
-        target: discussion/9913735
-
-`
-	r := Rules{}
-	err := yaml.Unmarshal([]byte(rules), &r)
-	assert.NoError(t, err)
-	assert.NotNil(t, r)
-}
 
 func TestRulesValidateFailed(t *testing.T) {
 	tests := []struct {
@@ -38,7 +18,7 @@ func TestRulesValidateFailed(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:  "",
-						Outcome: []Receiver{{Type: "log"}},
+						Outcome: []Receiver{{Type: "!log"}},
 					},
 				},
 			},

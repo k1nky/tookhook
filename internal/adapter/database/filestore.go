@@ -11,51 +11,36 @@ import (
 )
 
 type FileStore struct {
-	DSN   string
-	log   logger
-	rules *entity.Rules
+	DSN string
+	log logger
 }
 
 func NewFileStore(dsn string, log logger) *FileStore {
 	return &FileStore{
-		DSN:   strings.TrimPrefix(dsn, "file://"),
-		log:   log,
-		rules: &entity.Rules{},
+		DSN: strings.TrimPrefix(dsn, "file://"),
+		log: log,
 	}
 }
 
 func (fs *FileStore) Open(ctx context.Context) (err error) {
-	return fs.ReadRules(ctx)
+	return nil
 }
 
-func (fs *FileStore) ReadRules(ctx context.Context) error {
+func (fs *FileStore) GetRules(ctx context.Context) (*entity.Rules, error) {
 	f, err := os.Open(fs.DSN)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 	data, err := io.ReadAll(f)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	rules := &entity.Rules{}
 	if err := yaml.Unmarshal(data, rules); err != nil {
-		return err
+		return nil, err
 	}
-	if err := rules.Validate(); err != nil {
-		return err
-	}
-	fs.rules = rules
-	return nil
-}
-
-func (fs *FileStore) GetIncomeHookByName(ctx context.Context, name string) (*entity.Hook, error) {
-	for _, v := range fs.rules.Hooks {
-		if v.Income == name {
-			return &v, nil
-		}
-	}
-	return nil, nil
+	return rules, nil
 }
 
 func (fs *FileStore) Close() error {

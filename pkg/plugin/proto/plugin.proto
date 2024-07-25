@@ -4,9 +4,12 @@ package protocol.grpc;
 
 option go_package = "github.com/k1nky/tookhook/pkg/plugin/proto";
 
+message PluginOptions {
+    bytes value = 2;
+}
+
 message ReceiverSpec {
-    string target = 1;
-    string token = 2;
+    PluginOptions options = 3;
 }
 
 message Data {
@@ -16,17 +19,25 @@ message Data {
 message ForwardRequest {
     ReceiverSpec receiver = 1;
     Data data = 2;
+    PluginOptions plugin_options = 3;
 }
 
 message ForwardResponse {
     bytes data = 1;
 }
 
+message ValidateRequest {
+    PluginOptions plugin_options = 1;
+}
+
+message ValidateResponse {}
+
 message Empty {}
 
 service Plugin {
     rpc Forward(ForwardRequest) returns (ForwardResponse);
     rpc Health(Empty) returns (Empty);
+    rpc Validate(ValidateRequest) returns (ValidateResponse);
 }
 
 

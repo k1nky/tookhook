@@ -16,6 +16,7 @@ import (
 	"github.com/k1nky/tookhook/internal/logger"
 	"github.com/k1nky/tookhook/internal/service/hooker"
 	"github.com/k1nky/tookhook/internal/service/monitor"
+	"github.com/k1nky/tookhook/internal/service/ruler"
 )
 
 func main() {
@@ -51,9 +52,13 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 		log.Errorf("failed opening db: %v", err)
 		return
 	}
-	hookService := hooker.New(store, pm, log)
-	monitorService := monitor.New(pm, hookService)
+	ruleService := ruler.New(pm, store, log)
+	if err := ruleService.Load(ctx); err != nil {
+		panic(err)
+	}
+	hookService := hooker.New(ruleService, pm, log)
+	monitorService := monitor.New(pm, hookService, store, log)
 
-	httpServer := httphandler.New(log, hookService, monitorService)
+	httpServer := httphandler.New(log, hookService, monitorService, ruleService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
 }

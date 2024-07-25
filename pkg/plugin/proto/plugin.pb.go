@@ -20,19 +20,65 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type PluginOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *PluginOptions) Reset() {
+	*x = PluginOptions{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PluginOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PluginOptions) ProtoMessage() {}
+
+func (x *PluginOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PluginOptions.ProtoReflect.Descriptor instead.
+func (*PluginOptions) Descriptor() ([]byte, []int) {
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *PluginOptions) GetValue() []byte {
+	if x != nil {
+		return x.Value
+	}
+	return nil
+}
+
 type ReceiverSpec struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Target string `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
-	Token  string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
+	Options *PluginOptions `protobuf:"bytes,3,opt,name=options,proto3" json:"options,omitempty"`
 }
 
 func (x *ReceiverSpec) Reset() {
 	*x = ReceiverSpec{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[0]
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -45,7 +91,7 @@ func (x *ReceiverSpec) String() string {
 func (*ReceiverSpec) ProtoMessage() {}
 
 func (x *ReceiverSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[0]
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58,21 +104,14 @@ func (x *ReceiverSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReceiverSpec.ProtoReflect.Descriptor instead.
 func (*ReceiverSpec) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{0}
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ReceiverSpec) GetTarget() string {
+func (x *ReceiverSpec) GetOptions() *PluginOptions {
 	if x != nil {
-		return x.Target
+		return x.Options
 	}
-	return ""
-}
-
-func (x *ReceiverSpec) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
+	return nil
 }
 
 type Data struct {
@@ -86,7 +125,7 @@ type Data struct {
 func (x *Data) Reset() {
 	*x = Data{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[1]
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -99,7 +138,7 @@ func (x *Data) String() string {
 func (*Data) ProtoMessage() {}
 
 func (x *Data) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[1]
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -112,7 +151,7 @@ func (x *Data) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data.ProtoReflect.Descriptor instead.
 func (*Data) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{1}
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Data) GetData() []byte {
@@ -127,14 +166,15 @@ type ForwardRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Receiver *ReceiverSpec `protobuf:"bytes,1,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Data     *Data         `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Receiver      *ReceiverSpec  `protobuf:"bytes,1,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	Data          *Data          `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	PluginOptions *PluginOptions `protobuf:"bytes,3,opt,name=plugin_options,json=pluginOptions,proto3" json:"plugin_options,omitempty"`
 }
 
 func (x *ForwardRequest) Reset() {
 	*x = ForwardRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[2]
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -147,7 +187,7 @@ func (x *ForwardRequest) String() string {
 func (*ForwardRequest) ProtoMessage() {}
 
 func (x *ForwardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[2]
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -160,7 +200,7 @@ func (x *ForwardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ForwardRequest.ProtoReflect.Descriptor instead.
 func (*ForwardRequest) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{2}
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ForwardRequest) GetReceiver() *ReceiverSpec {
@@ -177,6 +217,13 @@ func (x *ForwardRequest) GetData() *Data {
 	return nil
 }
 
+func (x *ForwardRequest) GetPluginOptions() *PluginOptions {
+	if x != nil {
+		return x.PluginOptions
+	}
+	return nil
+}
+
 type ForwardResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -188,7 +235,7 @@ type ForwardResponse struct {
 func (x *ForwardResponse) Reset() {
 	*x = ForwardResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[3]
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -201,7 +248,7 @@ func (x *ForwardResponse) String() string {
 func (*ForwardResponse) ProtoMessage() {}
 
 func (x *ForwardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[3]
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -214,7 +261,7 @@ func (x *ForwardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ForwardResponse.ProtoReflect.Descriptor instead.
 func (*ForwardResponse) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{3}
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ForwardResponse) GetData() []byte {
@@ -222,6 +269,91 @@ func (x *ForwardResponse) GetData() []byte {
 		return x.Data
 	}
 	return nil
+}
+
+type ValidateRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PluginOptions *PluginOptions `protobuf:"bytes,1,opt,name=plugin_options,json=pluginOptions,proto3" json:"plugin_options,omitempty"`
+}
+
+func (x *ValidateRequest) Reset() {
+	*x = ValidateRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ValidateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateRequest) ProtoMessage() {}
+
+func (x *ValidateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateRequest.ProtoReflect.Descriptor instead.
+func (*ValidateRequest) Descriptor() ([]byte, []int) {
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ValidateRequest) GetPluginOptions() *PluginOptions {
+	if x != nil {
+		return x.PluginOptions
+	}
+	return nil
+}
+
+type ValidateResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *ValidateResponse) Reset() {
+	*x = ValidateResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ValidateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateResponse) ProtoMessage() {}
+
+func (x *ValidateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateResponse.ProtoReflect.Descriptor instead.
+func (*ValidateResponse) Descriptor() ([]byte, []int) {
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{6}
 }
 
 type Empty struct {
@@ -233,7 +365,7 @@ type Empty struct {
 func (x *Empty) Reset() {
 	*x = Empty{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[4]
+		mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -246,7 +378,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[4]
+	mi := &file_pkg_plugin_proto_plugin_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -259,7 +391,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{4}
+	return file_pkg_plugin_proto_plugin_proto_rawDescGZIP(), []int{7}
 }
 
 var File_pkg_plugin_proto_plugin_proto protoreflect.FileDescriptor
@@ -267,32 +399,51 @@ var File_pkg_plugin_proto_plugin_proto protoreflect.FileDescriptor
 var file_pkg_plugin_proto_plugin_proto_rawDesc = []byte{
 	0x0a, 0x1d, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2f, 0x70, 0x72, 0x6f,
 	0x74, 0x6f, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12,
-	0x0d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x22, 0x3c,
-	0x0a, 0x0c, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x53, 0x70, 0x65, 0x63, 0x12, 0x16,
-	0x0a, 0x06, 0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
-	0x74, 0x61, 0x72, 0x67, 0x65, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x1a, 0x0a, 0x04,
-	0x44, 0x61, 0x74, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x72, 0x0a, 0x0e, 0x46, 0x6f, 0x72, 0x77,
-	0x61, 0x72, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x37, 0x0a, 0x08, 0x72, 0x65,
-	0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x52, 0x65, 0x63,
-	0x65, 0x69, 0x76, 0x65, 0x72, 0x53, 0x70, 0x65, 0x63, 0x52, 0x08, 0x72, 0x65, 0x63, 0x65, 0x69,
-	0x76, 0x65, 0x72, 0x12, 0x27, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70,
-	0x63, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x25, 0x0a, 0x0f,
-	0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64,
-	0x61, 0x74, 0x61, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x32, 0x88, 0x01, 0x0a,
-	0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x12, 0x48, 0x0a, 0x07, 0x46, 0x6f, 0x72, 0x77, 0x61,
-	0x72, 0x64, 0x12, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72,
-	0x70, 0x63, 0x2e, 0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70,
-	0x63, 0x2e, 0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x34, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x12, 0x14, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74,
-	0x79, 0x1a, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70,
-	0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x0d, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x22, 0x25,
+	0x0a, 0x0d, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12,
+	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x05,
+	0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x46, 0x0a, 0x0c, 0x52, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65,
+	0x72, 0x53, 0x70, 0x65, 0x63, 0x12, 0x36, 0x0a, 0x07, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x1a, 0x0a,
+	0x04, 0x44, 0x61, 0x74, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0xb7, 0x01, 0x0a, 0x0e, 0x46, 0x6f,
+	0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x37, 0x0a, 0x08,
+	0x72, 0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x52,
+	0x65, 0x63, 0x65, 0x69, 0x76, 0x65, 0x72, 0x53, 0x70, 0x65, 0x63, 0x52, 0x08, 0x72, 0x65, 0x63,
+	0x65, 0x69, 0x76, 0x65, 0x72, 0x12, 0x27, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67,
+	0x72, 0x70, 0x63, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x43,
+	0x0a, 0x0e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0d, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x22, 0x25, 0x0a, 0x0f, 0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x22, 0x56, 0x0a, 0x0f, 0x56, 0x61,
+	0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x43, 0x0a,
+	0x0e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x52, 0x0d, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x22, 0x12, 0x0a, 0x10, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x32,
+	0xd5, 0x01, 0x0a, 0x06, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x12, 0x48, 0x0a, 0x07, 0x46, 0x6f,
+	0x72, 0x77, 0x61, 0x72, 0x64, 0x12, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e,
+	0x67, 0x72, 0x70, 0x63, 0x2e, 0x46, 0x6f, 0x72, 0x77, 0x61, 0x72, 0x64, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x34, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x6c, 0x74, 0x68, 0x12, 0x14,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x45,
+	0x6d, 0x70, 0x74, 0x79, 0x1a, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e,
+	0x67, 0x72, 0x70, 0x63, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x08, 0x56, 0x61,
+	0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x12, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2e, 0x67, 0x72, 0x70, 0x63, 0x2e, 0x56, 0x61, 0x6c, 0x69, 0x64, 0x61, 0x74, 0x65, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6b, 0x31, 0x6e, 0x6b, 0x79, 0x2f, 0x74, 0x6f, 0x6f, 0x6b,
 	0x68, 0x6f, 0x6f, 0x6b, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x2f,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
@@ -310,26 +461,34 @@ func file_pkg_plugin_proto_plugin_proto_rawDescGZIP() []byte {
 	return file_pkg_plugin_proto_plugin_proto_rawDescData
 }
 
-var file_pkg_plugin_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_pkg_plugin_proto_plugin_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_pkg_plugin_proto_plugin_proto_goTypes = []any{
-	(*ReceiverSpec)(nil),    // 0: protocol.grpc.ReceiverSpec
-	(*Data)(nil),            // 1: protocol.grpc.Data
-	(*ForwardRequest)(nil),  // 2: protocol.grpc.ForwardRequest
-	(*ForwardResponse)(nil), // 3: protocol.grpc.ForwardResponse
-	(*Empty)(nil),           // 4: protocol.grpc.Empty
+	(*PluginOptions)(nil),    // 0: protocol.grpc.PluginOptions
+	(*ReceiverSpec)(nil),     // 1: protocol.grpc.ReceiverSpec
+	(*Data)(nil),             // 2: protocol.grpc.Data
+	(*ForwardRequest)(nil),   // 3: protocol.grpc.ForwardRequest
+	(*ForwardResponse)(nil),  // 4: protocol.grpc.ForwardResponse
+	(*ValidateRequest)(nil),  // 5: protocol.grpc.ValidateRequest
+	(*ValidateResponse)(nil), // 6: protocol.grpc.ValidateResponse
+	(*Empty)(nil),            // 7: protocol.grpc.Empty
 }
 var file_pkg_plugin_proto_plugin_proto_depIdxs = []int32{
-	0, // 0: protocol.grpc.ForwardRequest.receiver:type_name -> protocol.grpc.ReceiverSpec
-	1, // 1: protocol.grpc.ForwardRequest.data:type_name -> protocol.grpc.Data
-	2, // 2: protocol.grpc.Plugin.Forward:input_type -> protocol.grpc.ForwardRequest
-	4, // 3: protocol.grpc.Plugin.Health:input_type -> protocol.grpc.Empty
-	3, // 4: protocol.grpc.Plugin.Forward:output_type -> protocol.grpc.ForwardResponse
-	4, // 5: protocol.grpc.Plugin.Health:output_type -> protocol.grpc.Empty
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 0: protocol.grpc.ReceiverSpec.options:type_name -> protocol.grpc.PluginOptions
+	1, // 1: protocol.grpc.ForwardRequest.receiver:type_name -> protocol.grpc.ReceiverSpec
+	2, // 2: protocol.grpc.ForwardRequest.data:type_name -> protocol.grpc.Data
+	0, // 3: protocol.grpc.ForwardRequest.plugin_options:type_name -> protocol.grpc.PluginOptions
+	0, // 4: protocol.grpc.ValidateRequest.plugin_options:type_name -> protocol.grpc.PluginOptions
+	3, // 5: protocol.grpc.Plugin.Forward:input_type -> protocol.grpc.ForwardRequest
+	7, // 6: protocol.grpc.Plugin.Health:input_type -> protocol.grpc.Empty
+	5, // 7: protocol.grpc.Plugin.Validate:input_type -> protocol.grpc.ValidateRequest
+	4, // 8: protocol.grpc.Plugin.Forward:output_type -> protocol.grpc.ForwardResponse
+	7, // 9: protocol.grpc.Plugin.Health:output_type -> protocol.grpc.Empty
+	6, // 10: protocol.grpc.Plugin.Validate:output_type -> protocol.grpc.ValidateResponse
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_pkg_plugin_proto_plugin_proto_init() }
@@ -339,7 +498,7 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_pkg_plugin_proto_plugin_proto_msgTypes[0].Exporter = func(v any, i int) any {
-			switch v := v.(*ReceiverSpec); i {
+			switch v := v.(*PluginOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -351,7 +510,7 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 			}
 		}
 		file_pkg_plugin_proto_plugin_proto_msgTypes[1].Exporter = func(v any, i int) any {
-			switch v := v.(*Data); i {
+			switch v := v.(*ReceiverSpec); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -363,7 +522,7 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 			}
 		}
 		file_pkg_plugin_proto_plugin_proto_msgTypes[2].Exporter = func(v any, i int) any {
-			switch v := v.(*ForwardRequest); i {
+			switch v := v.(*Data); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -375,7 +534,7 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 			}
 		}
 		file_pkg_plugin_proto_plugin_proto_msgTypes[3].Exporter = func(v any, i int) any {
-			switch v := v.(*ForwardResponse); i {
+			switch v := v.(*ForwardRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -387,6 +546,42 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 			}
 		}
 		file_pkg_plugin_proto_plugin_proto_msgTypes[4].Exporter = func(v any, i int) any {
+			switch v := v.(*ForwardResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_plugin_proto_plugin_proto_msgTypes[5].Exporter = func(v any, i int) any {
+			switch v := v.(*ValidateRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_plugin_proto_plugin_proto_msgTypes[6].Exporter = func(v any, i int) any {
+			switch v := v.(*ValidateResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pkg_plugin_proto_plugin_proto_msgTypes[7].Exporter = func(v any, i int) any {
 			switch v := v.(*Empty); i {
 			case 0:
 				return &v.state
@@ -405,7 +600,7 @@ func file_pkg_plugin_proto_plugin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_plugin_proto_plugin_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -5,42 +5,28 @@ import (
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
 const (
-	ReceiverTypeLog = "log"
+	ReceiverTypeLog = "!log"
 )
 
 type Service struct {
-	store storage
-	pm    pluginmanager
-	log   logger
+	rs  rulesStore
+	pm  pluginmanager
+	log logger
 }
 
-func New(store storage, pm pluginmanager, log logger) *Service {
+func New(rs rulesStore, pm pluginmanager, log logger) *Service {
 	return &Service{
-		store: store,
-		pm:    pm,
-		log:   log,
+		rs:  rs,
+		pm:  pm,
+		log: log,
 	}
-}
-
-func (svc *Service) Reload(ctx context.Context) error {
-	err := svc.store.ReadRules(ctx)
-	if err != nil {
-		svc.log.Errorf("reload rules: %v", err)
-	} else {
-		svc.log.Debugf("reload rules: success")
-	}
-	return err
 }
 
 func (svc *Service) Forward(ctx context.Context, name string, data []byte) error {
-	rule, err := svc.store.GetIncomeHookByName(ctx, name)
-	if err != nil {
-		return err
-	}
+	rule := svc.rs.GetIncomeHookByName(ctx, name)
 	if rule == nil {
 		return fmt.Errorf("income rule %s: %w", name, entity.ErrNotFound)
 	}
@@ -50,7 +36,7 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 	}
 	for _, r := range rule.Outcome {
 		if r.Disabled {
-			svc.log.Debugf("reciever %s %s skipped", r.Type, r.Target)
+			svc.log.Debugf("reciever %s %s skipped", r.Type)
 			continue
 		}
 		content, err := r.Content(data)
@@ -63,8 +49,8 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		}
 		fwd := svc.pm.Get(r.Type)
 		if fwd != nil {
-			if _, err := fwd.Forward(ctx, pluginReceiver(r), content); err != nil {
-				svc.log.Errorf("send to %s %s failed: %v", r.Type, r.Target, err)
+			if _, err := fwd.Forward(ctx, r.AsPluginReceiver(), content); err != nil {
+				svc.log.Errorf("send to %s %s failed: %v", r.Type, err)
 			}
 		}
 	}
@@ -73,11 +59,4 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 
 func (svc *Service) Health(ctx context.Context) entity.Status {
 	return entity.StatusOk
-}
-
-func pluginReceiver(r entity.Receiver) plugin.Receiver {
-	return plugin.Receiver{
-		Token:  r.Token,
-		Target: r.Target,
-	}
 }

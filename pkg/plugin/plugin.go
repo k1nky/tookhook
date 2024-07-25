@@ -9,17 +9,13 @@ import (
 )
 
 type Receiver struct {
-	Token  string
-	Target string
+	Options []byte
 }
 
 type Plugin interface {
-	Forward(Receiver, []byte) ([]byte, error)
-	Health() error
-}
-
-type TookhookPlugin struct {
-	Impl Plugin
+	Forward(ctx context.Context, r Receiver, data []byte) ([]byte, error)
+	Health(ctx context.Context) error
+	Validate(ctx context.Context, r Receiver) error
 }
 
 var Handshake = plugin.HandshakeConfig{
