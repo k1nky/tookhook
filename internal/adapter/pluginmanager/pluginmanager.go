@@ -39,6 +39,7 @@ func (a *Adapter) Load(ctx context.Context, name string, command string) error {
 		HandshakeConfig: plugin.Handshake,
 		Plugins:         plugin.PluginMap,
 		Cmd:             exec.Command(command),
+		Logger:          a.log.AsHCLogger(),
 		AllowedProtocols: []hcplugin.Protocol{
 			hcplugin.ProtocolGRPC},
 	})
@@ -67,11 +68,11 @@ func (a *Adapter) Load(ctx context.Context, name string, command string) error {
 }
 
 func (a *Adapter) checkPluginHealth(ctx context.Context, name string) {
-	client := a.Get(name)
-	if client == nil {
+	p := a.Get(name)
+	if p == nil {
 		return
 	}
-	err := client.Health(ctx)
+	err := p.Health(ctx)
 	if err != nil {
 		a.log.Errorf("plugin manager watcher: %v", err)
 		a.status.Store(name, entity.StatusFailed)
@@ -81,18 +82,20 @@ func (a *Adapter) checkPluginHealth(ctx context.Context, name string) {
 }
 
 func (a *Adapter) runWathcer(ctx context.Context) {
-	t := time.NewTicker(time.Minute)
+	t := time.NewTicker(10 * time.Second)
 	go func() {
 		defer t.Stop()
-		select {
-		case <-ctx.Done():
-			return
-		case <-t.C:
-			a.plugins.Range(func(key, value any) bool {
-				pluginName := key.(string)
-				a.checkPluginHealth(ctx, pluginName)
-				return true
-			})
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				a.plugins.Range(func(key, value any) bool {
+					pluginName := key.(string)
+					a.checkPluginHealth(ctx, pluginName)
+					return true
+				})
+			}
 		}
 	}()
 }
