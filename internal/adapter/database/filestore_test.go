@@ -64,61 +64,6 @@ func (suite *fileStoreTestSuite) TestReadRulesInvalidYaml() {
 	suite.Nil(rules)
 }
 
-// func (suite *fileStoreTestSuite) TestReadRulesValid() {
-// 	ctx := context.TODO()
-// 	suite.write(`
-// templates:
-//   A:
-// hooks:
-//  - income: test
-//    outcome:
-//      - type: plugin_name
-//        template:
-//          - template: T
-//        target: my_target
-//        token: my_token
-// `)
-// 	err := suite.fs.ReadRules(ctx)
-// 	suite.NoError(err)
-// }
-
-// func (suite *fileStoreTestSuite) TestReadRulesInvalid() {
-// 	ctx := context.TODO()
-// 	suite.write(`
-// templates:
-//   A:
-// hooks:
-//  - income: test
-//    outcome:
-//      - type:
-//        template:
-//          - template: T
-//        target: my_target
-//        token: my_token
-// `)
-// 	err := suite.fs.ReadRules(ctx)
-// 	suite.Error(err)
-// }
-
-// func (suite *fileStoreTestSuite) TestGetIncomeHookByName() {
-// 	suite.fs.rules.Hooks = []entity.Hook{
-// 		{Income: "A", Outcome: []entity.Receiver{{Type: "null"}}},
-// 	}
-// 	got, err := suite.fs.GetIncomeHookByName(context.TODO(), "A")
-// 	suite.NoError(err)
-// 	suite.NotNil(got)
-// 	suite.Equal(suite.fs.rules.Hooks[0], *got)
-// }
-
-// func (suite *fileStoreTestSuite) TestGetIncomeHookByNameNotFound() {
-// 	suite.fs.rules.Hooks = []entity.Hook{
-// 		{Income: "A", Outcome: []entity.Receiver{{Type: "null"}}},
-// 	}
-// 	got, err := suite.fs.GetIncomeHookByName(context.TODO(), "B")
-// 	suite.NoError(err)
-// 	suite.Nil(got)
-// }
-
 func TestFileStore(t *testing.T) {
 	suite.Run(t, new(fileStoreTestSuite))
 }
