@@ -77,34 +77,15 @@ func (a *Adapter) buildRouter() http.Handler {
 }
 
 func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
-	var (
-		data []byte
-		err  error
-	)
 	requestId := r.Context().Value(KeyRequestId)
 	name := chi.URLParam(r, "name")
 
-	badRequest := func(error) {
+	data, err := a.bodyToJSON(r)
+	if err != nil {
 		a.log.Errorf("request id=%d has bad data: %v", requestId, err)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form") {
-		if err := r.ParseForm(); err != nil {
-			badRequest(err)
-			return
-		}
-		if data, err = json.Marshal(r.Form); err != nil {
-			badRequest(err)
-			return
-		}
-	} else {
-		data, err = io.ReadAll(r.Body)
-		if err != nil {
-			badRequest(err)
-			return
-		}
-	}
 	if err = a.hs.Forward(r.Context(), name, data); err != nil {
 		a.log.Errorf("request id=%d failed %v", requestId, err)
 		w.WriteHeader(http.StatusNotAcceptable)
@@ -133,4 +114,25 @@ func (a *Adapter) Reload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (a *Adapter) bodyToJSON(r *http.Request) ([]byte, error) {
+	var (
+		data []byte
+		err  error
+	)
+	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
+		if err := r.ParseForm(); err != nil {
+			return nil, err
+		}
+		if data, err = json.Marshal(r.Form); err != nil {
+			return nil, err
+		}
+	} else {
+		data, err = io.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return data, nil
 }

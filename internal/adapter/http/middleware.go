@@ -48,7 +48,7 @@ func LoggingMiddleware(l logger) func(http.Handler) http.Handler {
 				ResponseWriter: w,
 			}
 			requestId := r.Context().Value(KeyRequestId)
-			l.Debugf("id=%d %s %s %s", requestId, r.Method, r.RequestURI, string(body))
+			l.Debugf("id=%d %s %s %s %s", requestId, r.Method, r.RequestURI, r.Header.Get("content-type"), string(body))
 			next.ServeHTTP(bw, r)
 			l.Infof("id=%d %s %s status %d duration %s", requestId, r.Method, r.RequestURI, bw.code, time.Since(start))
 		})

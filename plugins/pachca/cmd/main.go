@@ -36,7 +36,6 @@ func (p Plugin) Validate(ctx context.Context, r plugin.Receiver) error {
 }
 
 func (p Plugin) Health(ctx context.Context) error {
-	p.log.Infof("health: OK")
 	return nil
 }
 
