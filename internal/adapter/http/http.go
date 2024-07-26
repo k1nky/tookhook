@@ -19,18 +19,18 @@ const (
 )
 
 type Adapter struct {
-	hs      hookService
-	monitor monitorService
-	log     logger
-	rs      rulesService
+	hs  hookService
+	ms  monitorService
+	log logger
+	rs  rulesService
 }
 
 func New(log logger, hooker hookService, monitor monitorService, rs rulesService) *Adapter {
 	a := &Adapter{
-		log:     log,
-		hs:      hooker,
-		monitor: monitor,
-		rs:      rs,
+		log: log,
+		hs:  hooker,
+		ms:  monitor,
+		rs:  rs,
 	}
 
 	return a
@@ -96,7 +96,7 @@ func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 
 func (a *Adapter) Health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
-	status := a.monitor.Status(r.Context())
+	status := a.ms.Status(r.Context())
 	body, err := json.Marshal(status)
 	if err != nil {
 		a.log.Errorf("%v", err)
