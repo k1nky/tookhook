@@ -27,7 +27,7 @@ type Receiver struct {
 	// Options will be passed to the plugin.
 	Options map[string]interface{} `yaml:"options"`
 	// List of template that will be executed before being passed to the plugin.
-	Template Templates `yaml:"template"`
+	PreTransform Transforms `yaml:"pre"`
 	// If true the receiver will be skipped.
 	Disabled bool `yaml:"disabled"`
 	// Serialized value of `Options`
@@ -38,17 +38,15 @@ type Receiver struct {
 type Rules struct {
 	// Hooks are a list of rules by which webhooks will be processed.
 	Hooks []Hook `yaml:"hooks"`
-	// Templates is named collection of templates. Нook rules can reference them.
-	Templates map[string]Templates `yaml:"templates"`
 }
 
-type Template struct {
+type Transform struct {
 	RegExp   string `yaml:"regexp"`
 	Template string `yaml:"template"`
 	On       string `yaml:"on"`
 }
 
-type Templates []Template
+type Transforms []Transform
 
 func isEmpty(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
@@ -75,7 +73,7 @@ func (r *Rules) Validate() error {
 	return nil
 }
 
-func (t Templates) Execute(data []byte) ([]byte, error) {
+func (t Transforms) Execute(data []byte) ([]byte, error) {
 	for _, t := range t {
 		if ok, _ := regexp.Match(t.On, data); ok {
 			if !isEmpty(t.RegExp) {
@@ -96,10 +94,10 @@ func (t Templates) Execute(data []byte) ([]byte, error) {
 }
 
 func (r Receiver) Content(data []byte) ([]byte, error) {
-	if len(r.Template) == 0 {
+	if len(r.PreTransform) == 0 {
 		return data, nil
 	}
-	return r.Template.Execute(data)
+	return r.PreTransform.Execute(data)
 }
 
 func (r Receiver) AsPluginReceiver() plugin.Receiver {

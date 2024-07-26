@@ -72,7 +72,7 @@ func TestRulesValidateNoError(t *testing.T) {
 
 func TestReceiverContentWithTemplate(t *testing.T) {
 	r := Receiver{
-		Template: Templates{Template{Template: "{{ .message }}"}},
+		PreTransform: Transforms{Transform{Template: "{{ .message }}"}},
 	}
 	data := []byte(`{"message": "Message", "text": "Text"}`)
 	content, err := r.Content(data)

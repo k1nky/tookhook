@@ -50,7 +50,6 @@ func (suite *fileStoreTestSuite) TestGetRulesEmpty() {
 	rules, err := suite.fs.GetRules(ctx)
 	suite.NoError(err)
 	suite.Len(rules.Hooks, 0)
-	suite.Nil(rules.Templates)
 }
 
 func (suite *fileStoreTestSuite) TestReadRulesInvalidYaml() {
