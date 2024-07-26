@@ -31,7 +31,7 @@ func New(log logger) *Adapter {
 }
 
 func (a *Adapter) Run(ctx context.Context) {
-	a.runWathcer(ctx)
+	a.runWatcher(ctx)
 }
 
 func (a *Adapter) Load(ctx context.Context, name string, command string) error {
@@ -81,7 +81,7 @@ func (a *Adapter) checkPluginHealth(ctx context.Context, name string) {
 	}
 }
 
-func (a *Adapter) runWathcer(ctx context.Context) {
+func (a *Adapter) runWatcher(ctx context.Context) {
 	t := time.NewTicker(10 * time.Second)
 	go func() {
 		defer t.Stop()
