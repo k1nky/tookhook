@@ -51,6 +51,7 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		if fwd != nil {
 			if _, err := fwd.Forward(ctx, r.AsPluginReceiver(), content); err != nil {
 				svc.log.Errorf("send to %s %s failed: %v", r.Type, err)
+				return err
 			}
 		}
 	}
