@@ -15,7 +15,7 @@ type Hook struct {
 	// Incoming webhook request name.
 	Income string `yaml:"income"`
 	// List of receivers.
-	Outcome []Receiver `yaml:"outcome"`
+	Handlers []Receiver `yaml:"handlers"`
 	// If true the hook will be skipped and the incoming request will be dropped.
 	Disabled bool `yaml:"disabled"`
 }
@@ -60,7 +60,7 @@ func (r *Rules) Validate() error {
 		if isEmpty(hook.Income) {
 			return fmt.Errorf("income %w", ErrEmptyValue)
 		}
-		for i, outcome := range hook.Outcome {
+		for i, outcome := range hook.Handlers {
 			if isEmpty(outcome.Type) {
 				return fmt.Errorf("outcome type %w", ErrEmptyValue)
 			}
@@ -69,7 +69,7 @@ func (r *Rules) Validate() error {
 				// should not happen
 				return fmt.Errorf("outcome options has %w", err)
 			}
-			hook.Outcome[i].options = buf.Bytes()
+			hook.Handlers[i].options = buf.Bytes()
 		}
 	}
 	return nil

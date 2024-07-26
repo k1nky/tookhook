@@ -17,8 +17,8 @@ func TestRulesValidateFailed(t *testing.T) {
 			rules: Rules{
 				Hooks: []Hook{
 					{
-						Income:  "",
-						Outcome: []Receiver{{Type: "!log"}},
+						Income:   "",
+						Handlers: []Receiver{{Type: "!log"}},
 					},
 				},
 			},
@@ -29,8 +29,8 @@ func TestRulesValidateFailed(t *testing.T) {
 			rules: Rules{
 				Hooks: []Hook{
 					{
-						Income:  "test",
-						Outcome: []Receiver{{Type: ""}},
+						Income:   "test",
+						Handlers: []Receiver{{Type: ""}},
 					},
 				},
 			},
@@ -55,8 +55,8 @@ func TestRulesValidateNoError(t *testing.T) {
 			rules: Rules{
 				Hooks: []Hook{
 					{
-						Income:  "test",
-						Outcome: []Receiver{{Type: "log"}},
+						Income:   "test",
+						Handlers: []Receiver{{Type: "log"}},
 					},
 				},
 			},

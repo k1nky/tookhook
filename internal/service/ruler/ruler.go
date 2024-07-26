@@ -59,7 +59,7 @@ func (svc *Service) Validate(ctx context.Context, rules *entity.Rules) error {
 		return err
 	}
 	for _, hook := range rules.Hooks {
-		for _, v := range hook.Outcome {
+		for _, v := range hook.Handlers {
 			p := svc.pm.Get(v.Type)
 			if p == nil {
 				continue

@@ -34,7 +34,7 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		svc.log.Debugf("rule %s skipped", rule.Income)
 		return nil
 	}
-	for _, r := range rule.Outcome {
+	for _, r := range rule.Handlers {
 		if r.Disabled {
 			svc.log.Debugf("reciever %s %s skipped", r.Type)
 			continue
