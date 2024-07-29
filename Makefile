@@ -25,10 +25,13 @@ build: gvt
 
 plugin:
 	CGO_ENABLED=0 go build -o build/pachca plugins/pachca/cmd/*.go
+	CGO_ENABLED=0 go build -o build/telegram plugins/telegram/cmd/*.go
+	CGO_ENABLED=0 go build -o dev/exec plugins/exec/cmd/*.go
 
 plugin-dev:
 	go build -o dev/pachca plugins/pachca/cmd/*.go
 	go build -o dev/telegram plugins/telegram/cmd/*.go
+	go build -o dev/exec plugins/exec/cmd/*.go
 
 docker:
 	docker build -t k1nky/tookhook:latest .

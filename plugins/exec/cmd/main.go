@@ -1,0 +1,87 @@
+package main
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+
+	hcplugin "github.com/hashicorp/go-plugin"
+	"github.com/k1nky/tookhook/pkg/logger"
+	"github.com/k1nky/tookhook/pkg/plugin"
+	"github.com/k1nky/tookhook/plugins/exec/internal/options"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+const (
+	DefaultLogLevel = "debug"
+)
+
+type Plugin struct {
+	log *logger.Logger
+}
+
+func (p Plugin) Validate(ctx context.Context, r plugin.Receiver) error {
+	opts, err := options.New(r.Options)
+	if err != nil {
+		p.log.Errorf("validate: %v", err)
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+	if err := opts.Validate(); err != nil {
+		p.log.Errorf("validate: %v", err)
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+	return nil
+}
+
+func (p Plugin) Health(ctx context.Context) error {
+	return nil
+}
+
+func (p Plugin) Forward(ctx context.Context, r plugin.Receiver, data []byte) ([]byte, error) {
+	opts, err := options.New(r.Options)
+	if err != nil {
+		p.log.Errorf("forward: %v", err)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	cmd := exec.Command(opts.Shell, opts.Args...)
+	cmd.Env = []string{
+		fmt.Sprintf("PLUGIN_EXEC_DATA=%s", data),
+	}
+	stdout := bytes.NewBuffer(nil)
+	cmd.Stdout = stdout
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+	response := stdout.Bytes()
+	p.log.Debugf("forward to %s with response: %s", opts.Args, string(response))
+	return response, err
+}
+
+func main() {
+	log := newLogger()
+	hcplugin.Serve(&hcplugin.ServeConfig{
+		HandshakeConfig: plugin.Handshake,
+		Plugins: map[string]hcplugin.Plugin{
+			"grpc": &plugin.GRPCPlugin{Impl: &Plugin{
+				log: log,
+			}},
+		},
+
+		GRPCServer: hcplugin.DefaultGRPCServer,
+	})
+}
+
+func newLogger() *logger.Logger {
+	logLevel := os.Getenv("TOOKHOK_PLUGIN_TELEGRAM_LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = DefaultLogLevel
+	}
+	l := logger.New("telegram")
+	if err := l.SetLevel(DefaultLogLevel); err != nil {
+		l.Errorf("invalid log level: %v", err)
+	}
+	return l
+}
