@@ -28,6 +28,7 @@ plugin:
 
 plugin-dev:
 	go build -o dev/pachca plugins/pachca/cmd/*.go
+	go build -o dev/telegram plugins/telegram/cmd/*.go
 
 docker:
 	docker build -t k1nky/tookhook:latest .
