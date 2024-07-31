@@ -7,6 +7,7 @@ import (
 	"time"
 
 	hcplugin "github.com/hashicorp/go-plugin"
+	"github.com/k1nky/tookhook/internal/builtin"
 	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
@@ -110,6 +111,9 @@ func (a *Adapter) Health(ctx context.Context) entity.PluginsStatus {
 }
 
 func (a *Adapter) Get(name string) plugin.Plugin {
+	if builtin.IsBuiltin(name) {
+		return builtin.NewHandler(name, a.log)
+	}
 	c, ok := a.plugins.Load(name)
 	if !ok {
 		return nil

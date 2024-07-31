@@ -7,10 +7,6 @@ import (
 	"github.com/k1nky/tookhook/internal/entity"
 )
 
-const (
-	ReceiverTypeLog = "!log"
-)
-
 type Service struct {
 	rs  rulesStore
 	pm  pluginmanager
@@ -42,10 +38,6 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		content, err := r.Content(data)
 		if err != nil {
 			return err
-		}
-		if r.Type == ReceiverTypeLog {
-			svc.log.Debugf(string(content))
-			continue
 		}
 		fwd := svc.pm.Get(r.Type)
 		if fwd != nil {
