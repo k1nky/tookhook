@@ -28,14 +28,18 @@ func main() {
 	log := logger.New(LoggerName)
 	log.SetLevel(LoggerDefaultLevel)
 
-	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	// load the service config
 	cfg := config.Config{}
 	if err := config.Parse(&cfg); err != nil {
-		panic(err)
+		log.Errorf("config: %s", err)
+		return
 	}
 	log.SetLevel(cfg.LogLevel)
 	log.Debugf("config: %+v", cfg)
 
+	// run the service
 	run(ctx, cfg, log)
 
 	<-ctx.Done()
@@ -43,27 +47,34 @@ func main() {
 }
 
 func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
+	// load plugins
 	pm := pluginmanager.New(log)
 	for _, v := range strings.Split(cfg.Plugins, ",") {
 		_, name := path.Split(v)
 		if err := pm.Load(ctx, name, v); err != nil {
-			panic(err)
+			log.Errorf("plugins: %s", err)
+			return
 		}
 	}
 	pm.Run(ctx)
 
+	// open rules store
 	store := database.New(cfg.DarabaseURI, log)
 	if err := store.Open(ctx); err != nil {
-		log.Errorf("failed opening db: %v", err)
+		log.Errorf("failed opening db: %s", err)
 		return
 	}
 	ruleService := ruler.New(pm, store, log)
 	if err := ruleService.Load(ctx); err != nil {
-		panic(err)
+		log.Errorf("failed loading rules: %s", err)
+		return
 	}
+	// hook handler service
 	hookService := hooker.New(ruleService, pm, log)
+	// monitor service
 	monitorService := monitor.New(pm, hookService, store, log)
 
+	// run http server
 	httpServer := httphandler.New(log, hookService, monitorService, ruleService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
 }
