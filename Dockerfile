@@ -18,8 +18,7 @@ FROM alpine:3.19
 
 RUN apk add --no-cache tzdata
 
-COPY --from=build /src/build/tookhook /app/
-COPY --from=build /src/plugins/build/* /app/
+COPY --from=build /src/build/* /app/
 
 EXPOSE 8080
 

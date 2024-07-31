@@ -1,7 +1,18 @@
 SHELL:=/bin/bash
 STATICCHECK=$(shell which staticcheck)
+PLUGINS:=$(wildcard plugins/*)
+BUILD_PATH:=build
+MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
+MKFILE_DIR:=$(dir $(MKFILE_PATH))
+
 
 .DEFAULT_GOAL := build
+
+define pluginsmake
+	for d in ${PLUGINS}; do \
+		make -C $$d $(1) BUILD_PATH=${MKFILE_DIR}${BUILD_PATH}; \
+	done
+endef
 
 test:
 	go test -cover ./...
@@ -20,14 +31,20 @@ cover:
 	go test -cover ./... -coverprofile cover.out
 	go tool cover -html cover.out -o cover.html
 
-build: gvt 
-	CGO_ENABLED=0 go build -o build/tookhook cmd/*.go
+clean:
+	rm -rf build
+	rm -rf dev
+	rm -rf plugins
+	rm -f cover.*
 
-plugin:	
-	make -C plugins build
+build: gvt 
+	CGO_ENABLED=0 go build -o ${BUILD_PATH}/tookhook cmd/*.go
+
+plugin:
+	$(call pluginsmake,build)
 
 plugin-dev:
-	make -C plugins build-dev
+	$(call pluginsmake,plugin-dev)
 
 docker:
 	docker build -t k1nky/tookhook:latest .
@@ -35,9 +52,11 @@ docker:
 run:
 	go run ./cmd
 
+submodules:
+	git submodule update --init --recursive --remote
+
 prepare:
-	go mod tidy
-	# git submodule update --init --recursive --remote
+	go mod tidy	
 	go install go.uber.org/mock/mockgen@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest

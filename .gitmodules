@@ -1,3 +1,6 @@
-[submodule "plugins"]
-	path = plugins
-	url = git@github.com:k1nky/tookhook-plugins.git
+[submodule "pachca"]
+	path = plugins/pachca
+	url = git@github.com:k1nky/tookhook-plugin-pachca.git
+[submodule "telegram"]
+	path = plugins/telegram
+	url = git@github.com:k1nky/tookhook-plugin-telegram.git
