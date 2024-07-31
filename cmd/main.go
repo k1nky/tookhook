@@ -49,11 +49,13 @@ func main() {
 func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// load plugins
 	pm := pluginmanager.New(log)
-	for _, v := range strings.Split(cfg.Plugins, ",") {
-		_, name := path.Split(v)
-		if err := pm.Load(ctx, name, v); err != nil {
-			log.Errorf("plugins: %s", err)
-			return
+	if len(cfg.Plugins) > 0 {
+		for _, v := range strings.Split(cfg.Plugins, ",") {
+			_, name := path.Split(v)
+			if err := pm.Load(ctx, name, v); err != nil {
+				log.Errorf("plugins: %s", err)
+				return
+			}
 		}
 	}
 	pm.Run(ctx)
