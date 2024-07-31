@@ -23,15 +23,11 @@ cover:
 build: gvt 
 	CGO_ENABLED=0 go build -o build/tookhook cmd/*.go
 
-plugin:
-	CGO_ENABLED=0 go build -o build/pachca plugins/pachca/cmd/*.go
-	CGO_ENABLED=0 go build -o build/telegram plugins/telegram/cmd/*.go
-	CGO_ENABLED=0 go build -o dev/exec plugins/exec/cmd/*.go
+plugin:	
+	make -C plugins build
 
 plugin-dev:
-	go build -o dev/pachca plugins/pachca/cmd/*.go
-	go build -o dev/telegram plugins/telegram/cmd/*.go
-	go build -o dev/exec plugins/exec/cmd/*.go
+	make -C plugins build-dev
 
 docker:
 	docker build -t k1nky/tookhook:latest .
@@ -41,6 +37,7 @@ run:
 
 prepare:
 	go mod tidy
+	# git submodule update --init --recursive --remote
 	go install go.uber.org/mock/mockgen@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
