@@ -26,6 +26,9 @@ type Receiver struct {
 	Type string `yaml:"type"`
 	// Options will be passed to the plugin.
 	Options map[string]interface{} `yaml:"options"`
+	// On contains a regular expression string. The data will be passed to the receiver
+	// if the regexp matches.
+	On string `yaml:"on"`
 	// List of template that will be executed before being passed to the plugin.
 	PreTransform Transforms `yaml:"pre"`
 	// If true the receiver will be skipped.
@@ -52,7 +55,7 @@ func isEmpty(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
 }
 
-// Validate checks the rules and returns en error if there is one.
+// Validate checks the rules common syntax and returns en error if there is one.
 func (r *Rules) Validate() error {
 	for _, hook := range r.Hooks {
 		if isEmpty(hook.Income) {
@@ -104,4 +107,10 @@ func (r Receiver) AsPluginReceiver() plugin.Receiver {
 	return plugin.Receiver{
 		Options: r.options,
 	}
+}
+
+func (r Receiver) Match(data []byte) bool {
+	// TODO: compile
+	ok, _ := regexp.Match(r.On, data)
+	return ok
 }

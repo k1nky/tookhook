@@ -134,3 +134,18 @@ func (suite *serviceHookerSuite) TestForwardMultiplePluginsDisabled() {
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.NoError(err)
 }
+
+func (suite *serviceHookerSuite) TestForwardReceiverNotMatch() {
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+		Income: "test",
+		Handlers: []entity.Receiver{
+			{
+				Type: "plugin1",
+				On:   "123",
+			},
+		},
+	})
+	suite.pm.EXPECT().Get(gomock.Any()).Times(0)
+	err := suite.svc.Forward(context.TODO(), "test", []byte("abc"))
+	suite.NoError(err)
+}

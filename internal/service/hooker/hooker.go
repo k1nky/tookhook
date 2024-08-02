@@ -32,7 +32,11 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 	}
 	for _, r := range rule.Handlers {
 		if r.Disabled {
-			svc.log.Debugf("reciever %s %s skipped", r.Type)
+			svc.log.Debugf("receiver %s %s skipped", r.Type)
+			continue
+		}
+		if !r.Match(data) {
+			svc.log.Debugf("receiver %s %s skipped", r.Type)
 			continue
 		}
 		content, err := r.Content(data)
