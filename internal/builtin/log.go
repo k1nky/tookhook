@@ -7,12 +7,14 @@ import (
 )
 
 type LogHandler struct {
-	Logger logger
+	builtinPlugin
 }
 
 func NewLogHandler(log logger) *LogHandler {
 	return &LogHandler{
-		Logger: log,
+		builtinPlugin: builtinPlugin{
+			Logger: log,
+		},
 	}
 }
 
@@ -23,8 +25,4 @@ func (h *LogHandler) Validate(ctx context.Context, r plugin.Receiver) error {
 func (h *LogHandler) Forward(ctx context.Context, r plugin.Receiver, data []byte) ([]byte, error) {
 	h.Logger.Infof("%s", data)
 	return nil, nil
-}
-
-func (h *LogHandler) Health(ctx context.Context) error {
-	return nil
 }

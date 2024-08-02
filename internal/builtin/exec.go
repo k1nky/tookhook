@@ -12,7 +12,7 @@ import (
 )
 
 type ExecHandler struct {
-	Logger logger
+	builtinPlugin
 }
 
 //go:generate easyjson exec.go
@@ -41,7 +41,9 @@ func (opts ExecHandlerOptions) Validate() error {
 
 func NewExecHandler(log logger) *ExecHandler {
 	return &ExecHandler{
-		Logger: log,
+		builtinPlugin: builtinPlugin{
+			Logger: log,
+		},
 	}
 }
 
@@ -69,8 +71,4 @@ func (h *ExecHandler) Forward(ctx context.Context, r plugin.Receiver, data []byt
 	}
 	response := stdout.Bytes()
 	return response, err
-}
-
-func (h *ExecHandler) Health(ctx context.Context) error {
-	return nil
 }
