@@ -13,7 +13,7 @@ type MockPlugin struct {
 	ForwardResultError error
 }
 
-func (m *MockPlugin) Validate(ctx context.Context, r plugin.Receiver) error {
+func (m *MockPlugin) Validate(ctx context.Context, r plugin.Handler) error {
 	return m.ValidateResult
 }
 
@@ -21,6 +21,6 @@ func (m *MockPlugin) Health(ctx context.Context) error {
 	return m.HealthResult
 }
 
-func (m *MockPlugin) Forward(ctx context.Context, r plugin.Receiver, data []byte) ([]byte, error) {
+func (m *MockPlugin) Forward(ctx context.Context, r plugin.Handler, data []byte) ([]byte, error) {
 	return m.ForwardResultData, m.ForwardResultError
 }

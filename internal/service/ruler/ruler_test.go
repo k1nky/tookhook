@@ -96,7 +96,7 @@ func (suite *serviceValidateSuite) TestInvalidBaseStructure() {
 		Hooks: []entity.Hook{
 			{
 				Income: "",
-				Handlers: []entity.Receiver{
+				Handlers: []entity.Handler{
 					{
 						Type: "plugin_name",
 					},
@@ -114,7 +114,7 @@ func (suite *serviceValidateSuite) TestValidate() {
 		Hooks: []entity.Hook{
 			{
 				Income: "Rule1",
-				Handlers: []entity.Receiver{
+				Handlers: []entity.Handler{
 					{
 						Type: "plugin_name",
 					},

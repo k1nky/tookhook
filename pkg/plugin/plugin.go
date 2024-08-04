@@ -8,14 +8,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-type Receiver struct {
+type Handler struct {
 	Options []byte
 }
 
 type Plugin interface {
-	Forward(ctx context.Context, r Receiver, data []byte) ([]byte, error)
+	Forward(ctx context.Context, h Handler, data []byte) ([]byte, error)
 	Health(ctx context.Context) error
-	Validate(ctx context.Context, r Receiver) error
+	Validate(ctx context.Context, h Handler) error
 }
 
 var Handshake = plugin.HandshakeConfig{

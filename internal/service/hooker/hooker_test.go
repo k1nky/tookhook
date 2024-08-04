@@ -49,7 +49,7 @@ func (suite *serviceHookerSuite) TestForwardRuleDisabled() {
 func (suite *serviceHookerSuite) TestForwardNoPlugin() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -63,7 +63,7 @@ func (suite *serviceHookerSuite) TestForwardNoPlugin() {
 func (suite *serviceHookerSuite) TestForwardSuccess() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -80,7 +80,7 @@ func (suite *serviceHookerSuite) TestForwardSuccess() {
 func (suite *serviceHookerSuite) TestForwardPluginFailed() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -97,7 +97,7 @@ func (suite *serviceHookerSuite) TestForwardPluginFailed() {
 func (suite *serviceHookerSuite) TestForwardMultiplePlugins() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -117,7 +117,7 @@ func (suite *serviceHookerSuite) TestForwardMultiplePlugins() {
 func (suite *serviceHookerSuite) TestForwardMultiplePluginsDisabled() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type:     "plugin1",
 				Disabled: true,
@@ -135,10 +135,10 @@ func (suite *serviceHookerSuite) TestForwardMultiplePluginsDisabled() {
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardReceiverNotMatch() {
+func (suite *serviceHookerSuite) TestForwardHandlerNotMatch() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
-		Handlers: []entity.Receiver{
+		Handlers: []entity.Handler{
 			{
 				Type: "plugin1",
 				On:   "123",

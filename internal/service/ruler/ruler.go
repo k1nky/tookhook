@@ -64,7 +64,7 @@ func (svc *Service) Validate(ctx context.Context, rules *entity.Rules) error {
 			if p == nil {
 				continue
 			}
-			if err := p.Validate(ctx, v.AsPluginReceiver()); err != nil {
+			if err := p.Validate(ctx, v.AsPluginHandler()); err != nil {
 				return err
 			}
 		}

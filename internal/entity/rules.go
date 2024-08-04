@@ -14,14 +14,14 @@ import (
 type Hook struct {
 	// Incoming webhook request name.
 	Income string `yaml:"income"`
-	// List of receivers.
-	Handlers []Receiver `yaml:"handlers"`
+	// List of handlers.
+	Handlers []Handler `yaml:"handlers"`
 	// If true the hook will be skipped and the incoming request will be dropped.
 	Disabled bool `yaml:"disabled"`
 }
 
-// Receiver is the component that will receive data from the webhook.
-type Receiver struct {
+// Handler is the component that will receive data from the webhook.
+type Handler struct {
 	// Type is actually plugin name that will process incoming data.
 	Type string `yaml:"type"`
 	// Options will be passed to the plugin.
@@ -96,21 +96,21 @@ func (t Transforms) Execute(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-func (r Receiver) Content(data []byte) ([]byte, error) {
-	if len(r.PreTransform) == 0 {
+func (h Handler) Content(data []byte) ([]byte, error) {
+	if len(h.PreTransform) == 0 {
 		return data, nil
 	}
-	return r.PreTransform.Execute(data)
+	return h.PreTransform.Execute(data)
 }
 
-func (r Receiver) AsPluginReceiver() plugin.Receiver {
-	return plugin.Receiver{
-		Options: r.options,
+func (h Handler) AsPluginHandler() plugin.Handler {
+	return plugin.Handler{
+		Options: h.options,
 	}
 }
 
-func (r Receiver) Match(data []byte) bool {
+func (h Handler) Match(data []byte) bool {
 	// TODO: compile
-	ok, _ := regexp.Match(r.On, data)
+	ok, _ := regexp.Match(h.On, data)
 	return ok
 }

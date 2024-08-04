@@ -30,23 +30,23 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		svc.log.Debugf("rule %s skipped", rule.Income)
 		return nil
 	}
-	for _, r := range rule.Handlers {
-		if r.Disabled {
-			svc.log.Debugf("receiver %s %s skipped", r.Type)
+	for _, h := range rule.Handlers {
+		if h.Disabled {
+			svc.log.Debugf("handler %s %s skipped", h.Type)
 			continue
 		}
-		if !r.Match(data) {
-			svc.log.Debugf("receiver %s %s skipped", r.Type)
+		if !h.Match(data) {
+			svc.log.Debugf("handler %s %s skipped", h.Type)
 			continue
 		}
-		content, err := r.Content(data)
+		content, err := h.Content(data)
 		if err != nil {
 			return err
 		}
-		fwd := svc.pm.Get(r.Type)
+		fwd := svc.pm.Get(h.Type)
 		if fwd != nil {
-			if _, err := fwd.Forward(ctx, r.AsPluginReceiver(), content); err != nil {
-				svc.log.Errorf("send to %s %s failed: %v", r.Type, err)
+			if _, err := fwd.Forward(ctx, h.AsPluginHandler(), content); err != nil {
+				svc.log.Errorf("send to %s %s failed: %v", h.Type, err)
 				return err
 			}
 		}

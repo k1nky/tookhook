@@ -18,7 +18,7 @@ func TestRulesValidateFailed(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "",
-						Handlers: []Receiver{{Type: "!log"}},
+						Handlers: []Handler{{Type: "!log"}},
 					},
 				},
 			},
@@ -30,7 +30,7 @@ func TestRulesValidateFailed(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "test",
-						Handlers: []Receiver{{Type: ""}},
+						Handlers: []Handler{{Type: ""}},
 					},
 				},
 			},
@@ -56,7 +56,7 @@ func TestRulesValidateNoError(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "test",
-						Handlers: []Receiver{{Type: "log"}},
+						Handlers: []Handler{{Type: "log"}},
 					},
 				},
 			},
@@ -70,20 +70,20 @@ func TestRulesValidateNoError(t *testing.T) {
 	}
 }
 
-func TestReceiverContentWithTemplate(t *testing.T) {
-	r := Receiver{
+func TestHandlerContentWithTemplate(t *testing.T) {
+	h := Handler{
 		PreTransform: Transforms{Transform{Template: "{{ .message }}"}},
 	}
 	data := []byte(`{"message": "Message", "text": "Text"}`)
-	content, err := r.Content(data)
+	content, err := h.Content(data)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("Message"), content)
 }
 
-func TestReceiverContentWithoutTemplate(t *testing.T) {
-	r := Receiver{}
+func TestHandlerContentWithoutTemplate(t *testing.T) {
+	h := Handler{}
 	data := []byte(`My Message`)
-	content, err := r.Content(data)
+	content, err := h.Content(data)
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("My Message"), content)
 }

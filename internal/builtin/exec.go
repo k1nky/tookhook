@@ -47,7 +47,7 @@ func NewExecHandler(log logger) *ExecHandler {
 	}
 }
 
-func (h *ExecHandler) Validate(ctx context.Context, r plugin.Receiver) error {
+func (h *ExecHandler) Validate(ctx context.Context, r plugin.Handler) error {
 	opts, err := NewExecHandlerOptions(r.Options)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (h *ExecHandler) Validate(ctx context.Context, r plugin.Receiver) error {
 	return opts.Validate()
 }
 
-func (h *ExecHandler) Forward(ctx context.Context, r plugin.Receiver, data []byte) ([]byte, error) {
+func (h *ExecHandler) Forward(ctx context.Context, r plugin.Handler, data []byte) ([]byte, error) {
 	opts, err := NewExecHandlerOptions(r.Options)
 	if err != nil {
 		return nil, err

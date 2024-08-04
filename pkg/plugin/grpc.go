@@ -8,7 +8,7 @@ import (
 
 type GRPCClient struct{ client proto.PluginClient }
 
-func (m *GRPCClient) Forward(ctx context.Context, r Receiver, data []byte) ([]byte, error) {
+func (m *GRPCClient) Forward(ctx context.Context, r Handler, data []byte) ([]byte, error) {
 	_, err := m.client.Forward(ctx, &proto.ForwardRequest{
 		Receiver: &proto.ReceiverSpec{
 			Options: &proto.PluginOptions{
@@ -27,7 +27,7 @@ func (m *GRPCClient) Health(ctx context.Context) error {
 	return err
 }
 
-func (m *GRPCClient) Validate(ctx context.Context, r Receiver) error {
+func (m *GRPCClient) Validate(ctx context.Context, r Handler) error {
 	_, err := m.client.Validate(ctx, &proto.ValidateRequest{
 		PluginOptions: &proto.PluginOptions{
 			Value: r.Options,
@@ -42,7 +42,7 @@ type GRPCServer struct {
 }
 
 func (m *GRPCServer) Forward(ctx context.Context, req *proto.ForwardRequest) (*proto.ForwardResponse, error) {
-	r := Receiver{
+	r := Handler{
 		Options: req.Receiver.Options.Value,
 	}
 	data := req.Data.Data
@@ -56,7 +56,7 @@ func (m *GRPCServer) Health(ctx context.Context, req *proto.Empty) (*proto.Empty
 }
 
 func (m *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.ValidateResponse, error) {
-	r := Receiver{
+	r := Handler{
 		Options: req.PluginOptions.Value,
 	}
 	err := m.Impl.Validate(ctx, r)
