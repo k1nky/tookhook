@@ -85,3 +85,5 @@ Assignee: user_name
 # where PLUGIN_EXEC_DATA=XX-YYY
 /bin/sh -c "echo $PLUGIN_EXEC_DATA > /tmp/test"
 ```
+
+You found more about the rules in [03-CONFIGURE](https://github.com/k1nky/tookhook/blob/main/docs/03-CONFIGURE.md)

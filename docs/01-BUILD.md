@@ -21,6 +21,5 @@ Add your plugins as git submodule:
 ```
 git submodule add <your_plugin_project_url> plugins/<your_plugin_name>
 make submodules
-make plugin
 make docker
 ```
