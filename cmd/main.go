@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"path"
@@ -40,21 +41,24 @@ func main() {
 	log.Debugf("config: %+v", cfg)
 
 	// run the service
-	run(ctx, cfg, log)
+	if err := run(ctx, cfg, log); err != nil {
+		log.Errorf("%s", err)
+		os.Exit(1)
+		return
+	}
 
 	<-ctx.Done()
 	time.Sleep(1 * time.Second)
 }
 
-func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
+func run(ctx context.Context, cfg config.Config, log *logger.Logger) error {
 	// load plugins
 	pm := pluginmanager.New(log)
 	if len(cfg.Plugins) > 0 {
 		for _, v := range strings.Split(cfg.Plugins, ",") {
 			_, name := path.Split(v)
 			if err := pm.Load(ctx, name, v); err != nil {
-				log.Errorf("plugins: %s", err)
-				return
+				return fmt.Errorf("plugins: %s", err)
 			}
 		}
 	}
@@ -63,13 +67,11 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// open rules store
 	store := database.New(cfg.DarabaseURI, log)
 	if err := store.Open(ctx); err != nil {
-		log.Errorf("failed opening db: %s", err)
-		return
+		return fmt.Errorf("failed opening db: %s", err)
 	}
 	ruleService := ruler.New(pm, store, log)
 	if err := ruleService.Load(ctx); err != nil {
-		log.Errorf("failed loading rules: %s", err)
-		return
+		return fmt.Errorf("failed loading rules: %s", err)
 	}
 	// hook handler service
 	hookService := hooker.New(ruleService, pm, log)
@@ -79,4 +81,5 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) {
 	// run http server
 	httpServer := httphandler.New(log, hookService, monitorService, ruleService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
+	return nil
 }
