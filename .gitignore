@@ -1,6 +1,7 @@
 .vscode
-manual
+/config
 build
 dev
 cover.html
 cover.out
+.gitmodules
