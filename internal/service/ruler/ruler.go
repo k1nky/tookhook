@@ -55,7 +55,7 @@ func (svc *Service) Load(ctx context.Context) error {
 
 // Returns an error if specified rules is invalid.
 func (svc *Service) Validate(ctx context.Context, rules *entity.Rules) error {
-	if err := rules.Validate(); err != nil {
+	if err := rules.Compile(); err != nil {
 		return err
 	}
 	for _, hook := range rules.Hooks {

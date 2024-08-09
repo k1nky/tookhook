@@ -18,7 +18,7 @@ func TestRulesValidateFailed(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "",
-						Handlers: []Handler{{Type: "!log"}},
+						Handlers: []*Handler{{Type: "~log"}},
 					},
 				},
 			},
@@ -30,7 +30,7 @@ func TestRulesValidateFailed(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "test",
-						Handlers: []Handler{{Type: ""}},
+						Handlers: []*Handler{{Type: ""}},
 					},
 				},
 			},
@@ -39,7 +39,7 @@ func TestRulesValidateFailed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.rules.Validate()
+			got := tt.rules.Compile()
 			assert.ErrorIs(t, got, tt.want)
 		})
 	}
@@ -56,7 +56,7 @@ func TestRulesValidateNoError(t *testing.T) {
 				Hooks: []Hook{
 					{
 						Income:   "test",
-						Handlers: []Handler{{Type: "log"}},
+						Handlers: []*Handler{{Type: "log"}},
 					},
 				},
 			},
@@ -64,7 +64,7 @@ func TestRulesValidateNoError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.rules.Validate()
+			got := tt.rules.Compile()
 			assert.NoError(t, got)
 		})
 	}
@@ -72,8 +72,10 @@ func TestRulesValidateNoError(t *testing.T) {
 
 func TestHandlerContentWithTemplate(t *testing.T) {
 	h := Handler{
-		PreTransform: Transforms{Transform{Template: "{{ .message }}"}},
+		Type:         "handler1",
+		PreTransform: Transforms{&Transform{Template: "{{ .message }}"}},
 	}
+	h.Compile()
 	data := []byte(`{"message": "Message", "text": "Text"}`)
 	content, err := h.Content(data)
 	assert.NoError(t, err)
