@@ -2,7 +2,7 @@
 
 ---
 
-# About
+## About
 
 TookHook is a webhook server with pluggable handlers. The main goal of the prohect is to build custom integrations based on incoming webhook requests.
 
@@ -86,4 +86,11 @@ Assignee: user_name
 /bin/sh -c "echo $PLUGIN_EXEC_DATA > /tmp/test"
 ```
 
-You found more about the rules in [03-CONFIGURE](https://github.com/k1nky/tookhook/blob/main/docs/03-CONFIGURE.md)
+You found more about the rules in [03-CONFIGURE](https://github.com/k1nky/tookhook/blob/main/docs/03-CONFIGURE.md).
+
+## Documentation
+
+* [01-BUILD](https://github.com/k1nky/tookhook/blob/main/docs/01-BUILD.md)
+* [02-INSTALL](https://github.com/k1nky/tookhook/blob/main/docs/01-INSTALL.md)
+* [03-CONFIGURE](https://github.com/k1nky/tookhook/blob/main/docs/03-CONFIGURE.md)
+* [04-PLUGIN](https://github.com/k1nky/tookhook/blob/main/docs/04-PLUGIN.md)
