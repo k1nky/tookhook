@@ -3,6 +3,7 @@ package ruler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
 )
@@ -65,7 +66,7 @@ func (svc *Service) Validate(ctx context.Context, rules *entity.Rules) error {
 				continue
 			}
 			if err := p.Validate(ctx, v.AsPluginHandler()); err != nil {
-				return err
+				return fmt.Errorf("validate %s[handler=%s]: %w", hook.Income, v.Type, err)
 			}
 		}
 	}
