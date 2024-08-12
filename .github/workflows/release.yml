@@ -29,7 +29,7 @@ jobs:
     - name: Prepare
       run: make prepare
 
-    - name: Test
+    - name: Build
       run: make build
 
     - name: Release
