@@ -25,6 +25,12 @@ const (
 	LoggerDefaultLevel = "debug"
 )
 
+var (
+	buildVersion string = "N/A"
+	buildDate    string = "N/A"
+	buildCommit  string = "N/A"
+)
+
 func main() {
 	log := logger.New(LoggerName)
 	log.SetLevel(LoggerDefaultLevel)
@@ -37,8 +43,14 @@ func main() {
 		log.Errorf("config: %s", err)
 		return
 	}
+	// set log level from config
 	log.SetLevel(cfg.LogLevel)
 	log.Debugf("config: %+v", cfg)
+	// version info was requested
+	if cfg.Version {
+		showVersion()
+		return
+	}
 
 	// run the service
 	if err := run(ctx, cfg, log); err != nil {
@@ -82,4 +94,12 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) error {
 	httpServer := httphandler.New(log, hookService, monitorService, ruleService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
 	return nil
+}
+
+func showVersion() {
+	s := strings.Builder{}
+	fmt.Fprintf(&s, "Build version: %s\n", buildVersion)
+	fmt.Fprintf(&s, "Build date: %s\n", buildDate)
+	fmt.Fprintf(&s, "Build commit: %s\n", buildCommit)
+	fmt.Println(s.String())
 }

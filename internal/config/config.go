@@ -43,6 +43,7 @@ type Config struct {
 	LogLevel string `env:"TOOKHOOK_LOG_LEVEL"`
 	// Plugins is comma separated list of plugins: environment variable `TOOKHOOK_PLUGINS` or flag `-p`
 	Plugins string `env:"TOOKHOOK_PLUGINS"`
+	Version bool
 }
 
 func parseFromCmd(c *Config) error {
@@ -53,6 +54,7 @@ func parseFromCmd(c *Config) error {
 	databaseURI := cmd.StringP("database-uri", "d", "hooks.yml", "database connection string")
 	logLevel := cmd.StringP("log-level", "l", "info", "log level")
 	plugins := cmd.StringP("plugins", "p", "", "comma separated list of plugins")
+	version := cmd.BoolP("version", "v", false, "show version")
 
 	if err := cmd.Parse(os.Args[1:]); err != nil {
 		return err
@@ -63,6 +65,7 @@ func parseFromCmd(c *Config) error {
 		DarabaseURI: *databaseURI,
 		LogLevel:    *logLevel,
 		Plugins:     *plugins,
+		Version:     *version,
 	}
 	return nil
 }
