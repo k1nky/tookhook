@@ -47,25 +47,25 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		if err != nil {
 			return err
 		}
-		fwd := svc.pm.Get(h.Type)
-		if fwd != nil {
-			t := &entity.ForwardTaskPayload{
-				Name:    h.Type,
-				Options: h.AsPluginHandler().Options,
-				Content: content,
-			}
-			payload, err := t.Payload()
-			if err != nil {
-				svc.log.Errorf("marshaling payload to %s failed: %v", h.Type, err)
-				return err
-			}
-			if err := svc.q.Enqueue(ctx, &entity.QueueTask{
-				Queue:   entity.ForwardQueueName,
-				Payload: payload,
-			}); err != nil {
-				svc.log.Errorf("enqueue failed: %v", err)
-				continue
-			}
+		if fwd := svc.pm.Get(h.Type); fwd == nil {
+			continue
+		}
+		t := &entity.ForwardTaskPayload{
+			Name:    h.Type,
+			Options: h.AsPluginHandler().Options,
+			Content: content,
+		}
+		payload, err := t.Payload()
+		if err != nil {
+			svc.log.Errorf("marshaling payload to %s failed: %v", h.Type, err)
+			return err
+		}
+		if err := svc.q.Enqueue(ctx, &entity.QueueTask{
+			Queue:   entity.ForwardQueueName,
+			Payload: payload,
+		}); err != nil {
+			svc.log.Errorf("enqueue failed: %v", err)
+			continue
 		}
 	}
 	return nil
@@ -80,17 +80,17 @@ func (svc *Service) processQueueTask(ctx context.Context, qt entity.QueueTask) e
 	case entity.ForwardQueueName:
 		ftp := entity.ForwardTaskPayload{}
 		if err := json.Unmarshal(qt.Payload, &ftp); err != nil {
-			// 	return fmt.Errorf("%v: %w", err, asynq.SkipRetry)
+			return fmt.Errorf("%v: %w", err, entity.ErrSkipRetry)
+		}
+		if h := svc.pm.Get(ftp.Name); h != nil {
+			_, err := h.Forward(ctx, plugin.Handler{
+				Options: ftp.Options,
+			}, ftp.Content)
+			if err != nil {
+				svc.log.Errorf("task processing failed: %v", err)
+			}
 			return err
 		}
-		fwd := svc.pm.Get(ftp.Name)
-		_, err := fwd.Forward(ctx, plugin.Handler{
-			Options: ftp.Options,
-		}, ftp.Content)
-		if err != nil {
-			svc.log.Errorf("task processing failed: %v", err)
-		}
-		return err
 	}
 	return nil
 }

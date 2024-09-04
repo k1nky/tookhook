@@ -2,9 +2,15 @@ package taskq
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/hibiken/asynq"
 	"github.com/k1nky/tookhook/internal/entity"
+)
+
+const (
+	DefaultMaxRetry = 20
 )
 
 type Adapter struct {
@@ -52,11 +58,15 @@ func (a *Adapter) processTask(ctx context.Context, t *asynq.Task) error {
 		Queue:   t.Type(),
 		Payload: t.Payload(),
 	}
-	return a.handler(ctx, qt)
+	err := a.handler(ctx, qt)
+	if errors.Is(err, entity.ErrSkipRetry) {
+		return fmt.Errorf("%v: %w", err, asynq.SkipRetry)
+	}
+	return err
 }
 
 func (a *Adapter) Enqueue(ctx context.Context, queueTask *entity.QueueTask) error {
-	t := asynq.NewTask(queueTask.Queue, queueTask.Payload)
+	t := asynq.NewTask(queueTask.Queue, queueTask.Payload, asynq.MaxRetry(DefaultMaxRetry))
 	ti, err := a.client.EnqueueContext(ctx, t)
 	if err != nil {
 		a.log.Debugf("new task %s into %s", ti.ID, ti.Queue)
