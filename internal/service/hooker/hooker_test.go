@@ -17,6 +17,7 @@ type serviceHookerSuite struct {
 	suite.Suite
 	store *mock.MockrulesStore
 	pm    *mock.Mockpluginmanager
+	tq    *mock.Mocktaskqueue
 	svc   *Service
 }
 
@@ -28,7 +29,8 @@ func (suite *serviceHookerSuite) SetupTest() {
 	ctrl := gomock.NewController(suite.T())
 	suite.pm = mock.NewMockpluginmanager(ctrl)
 	suite.store = mock.NewMockrulesStore(ctrl)
-	suite.svc = New(suite.store, suite.pm, &log.Blackhole{})
+	suite.tq = mock.NewMocktaskqueue(ctrl)
+	suite.svc = New(suite.store, suite.pm, &log.Blackhole{}, suite.tq)
 }
 
 func (suite *serviceHookerSuite) TestForwardNotFound() {
@@ -110,6 +112,7 @@ func (suite *serviceHookerSuite) TestForwardMultiplePlugins() {
 		ForwardResultData:  nil,
 		ForwardResultError: nil,
 	}).Times(2)
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.NoError(err)
 }

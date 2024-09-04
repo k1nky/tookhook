@@ -13,7 +13,9 @@ import (
 	"github.com/k1nky/tookhook/internal/adapter/database"
 	httphandler "github.com/k1nky/tookhook/internal/adapter/http"
 	"github.com/k1nky/tookhook/internal/adapter/pluginmanager"
+	"github.com/k1nky/tookhook/internal/adapter/taskq"
 	"github.com/k1nky/tookhook/internal/config"
+	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/internal/service/hooker"
 	"github.com/k1nky/tookhook/internal/service/monitor"
 	"github.com/k1nky/tookhook/internal/service/ruler"
@@ -77,21 +79,23 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) error {
 	pm.Run(ctx)
 
 	// open rules store
-	store := database.New(cfg.DarabaseURI, log)
+	store := database.New(cfg.DarabaseURI, log.Sub("store"))
 	if err := store.Open(ctx); err != nil {
 		return fmt.Errorf("failed opening db: %s", err)
 	}
-	ruleService := ruler.New(pm, store, log)
+	ruleService := ruler.New(pm, store, log.Sub("ruler"))
 	if err := ruleService.Load(ctx); err != nil {
 		return fmt.Errorf("failed loading rules: %s", err)
 	}
+	tq := taskq.New(cfg.QueueURI, entity.ParentQueueName, log.Sub("asynq"))
 	// hook handler service
-	hookService := hooker.New(ruleService, pm, log)
+	hookService := hooker.New(ruleService, pm, log.Sub("hooker"), tq)
 	// monitor service
-	monitorService := monitor.New(pm, hookService, store, log)
+	monitorService := monitor.New(pm, hookService, store, log.Sub("monitor"))
+	hookService.Run(ctx)
 
 	// run http server
-	httpServer := httphandler.New(log, hookService, monitorService, ruleService)
+	httpServer := httphandler.New(log.Sub("http"), hookService, monitorService, ruleService)
 	httpServer.ListenAndServe(ctx, string(cfg.Listen))
 	return nil
 }
