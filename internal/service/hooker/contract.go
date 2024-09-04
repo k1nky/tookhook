@@ -21,3 +21,9 @@ type logger interface {
 type pluginmanager interface {
 	Get(name string) plugin.Plugin
 }
+
+//go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock taskqueue
+type taskqueue interface {
+	Enqueue(ctx context.Context, queueTask *entity.QueueTask) error
+	Process(ctx context.Context, handler entity.TaskHandlerFunc) error
+}

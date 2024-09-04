@@ -5,6 +5,7 @@ To install dependencies run:
 ```
 make prepare
 ```
+You should run `prepare` before the first build.
 
 ## Build binary
 ```
@@ -20,6 +21,9 @@ make docker
 Add your plugins as git submodule:
 ```
 git submodule add <your_plugin_project_url> plugins/<your_plugin_name>
-make submodules
+git submodule update --init --recursive --remote
+```
+And run:
+```
 make docker
 ```

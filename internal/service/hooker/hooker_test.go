@@ -17,6 +17,7 @@ type serviceHookerSuite struct {
 	suite.Suite
 	store *mock.MockrulesStore
 	pm    *mock.Mockpluginmanager
+	tq    *mock.Mocktaskqueue
 	svc   *Service
 }
 
@@ -28,16 +29,17 @@ func (suite *serviceHookerSuite) SetupTest() {
 	ctrl := gomock.NewController(suite.T())
 	suite.pm = mock.NewMockpluginmanager(ctrl)
 	suite.store = mock.NewMockrulesStore(ctrl)
-	suite.svc = New(suite.store, suite.pm, &log.Blackhole{})
+	suite.tq = mock.NewMocktaskqueue(ctrl)
+	suite.svc = New(suite.store, suite.pm, &log.Blackhole{}, suite.tq)
 }
 
-func (suite *serviceHookerSuite) TestForwardNotFound() {
+func (suite *serviceHookerSuite) TestForward_NotFound() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(nil)
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.ErrorIs(err, entity.ErrNotFound)
 }
 
-func (suite *serviceHookerSuite) TestForwardRuleDisabled() {
+func (suite *serviceHookerSuite) TestForward_RuleDisabled() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income:   "test",
 		Disabled: true,
@@ -46,7 +48,7 @@ func (suite *serviceHookerSuite) TestForwardRuleDisabled() {
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardNoPlugin() {
+func (suite *serviceHookerSuite) TestForward_NoPlugin() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -60,7 +62,7 @@ func (suite *serviceHookerSuite) TestForwardNoPlugin() {
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardSuccess() {
+func (suite *serviceHookerSuite) TestForward_Success() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -73,11 +75,12 @@ func (suite *serviceHookerSuite) TestForwardSuccess() {
 		ForwardResultData:  []byte("success"),
 		ForwardResultError: nil,
 	})
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil)
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardPluginFailed() {
+func (suite *serviceHookerSuite) TestForward_EnququeFailed() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -88,13 +91,14 @@ func (suite *serviceHookerSuite) TestForwardPluginFailed() {
 	})
 	suite.pm.EXPECT().Get(gomock.Any()).Return(&pluginmock.MockPlugin{
 		ForwardResultData:  nil,
-		ForwardResultError: errors.New("unexpected error"),
+		ForwardResultError: nil,
 	})
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(errors.New("enquque failed"))
 	err := suite.svc.Forward(context.TODO(), "test", nil)
-	suite.Error(err)
+	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardMultiplePlugins() {
+func (suite *serviceHookerSuite) TestForward_MultiplePlugins() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -110,11 +114,12 @@ func (suite *serviceHookerSuite) TestForwardMultiplePlugins() {
 		ForwardResultData:  nil,
 		ForwardResultError: nil,
 	}).Times(2)
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil).Times(2)
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardMultiplePluginsDisabled() {
+func (suite *serviceHookerSuite) TestForwardMultiple_PluginsDisabled() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -131,11 +136,12 @@ func (suite *serviceHookerSuite) TestForwardMultiplePluginsDisabled() {
 		ForwardResultData:  nil,
 		ForwardResultError: nil,
 	}).Times(1)
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	err := suite.svc.Forward(context.TODO(), "test", nil)
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardHandlerNotMatch() {
+func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
 	h := &entity.Handler{
 		Type: "plugin1",
 		On:   "123",

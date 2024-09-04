@@ -4,6 +4,10 @@ PLUGINS:=$(wildcard plugins/*)
 BUILD_PATH:=build
 MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR:=$(dir $(MKFILE_PATH))
+BULID_COMMIT=$(shell git rev-parse HEAD)
+BUILD_DATE=$(shell date +'%Y/%m/%d %H:%M:%S')
+BUILD_VERSION=$(shell git tag --points-at HEAD)
+LDFLAGS=-ldflags "-X main.buildVersion=${BUILD_VERSION} -X main.buildCommit=${BULID_COMMIT} -X 'main.buildDate=${BUILD_DATE}'"
 
 
 .DEFAULT_GOAL := build
@@ -38,7 +42,7 @@ clean:
 	rm -f cover.*
 
 build: gvt 
-	CGO_ENABLED=0 go build -o ${BUILD_PATH}/tookhook cmd/*.go
+	CGO_ENABLED=0 go build -o ${BUILD_PATH}/tookhook ${LDFLAGS} cmd/*.go
 
 plugin:
 	$(call pluginsmake,build)
@@ -59,8 +63,8 @@ addplugins:
 
 prepare:
 	go mod tidy	
-	go install go.uber.org/mock/mockgen@latest
-	go install honnef.co/go/tools/cmd/staticcheck@latest
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@latest
+	go install go.uber.org/mock/mockgen@v0.4.0
+	go install honnef.co/go/tools/cmd/staticcheck@v0.4.7
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.4.0
+	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@v0.7.7

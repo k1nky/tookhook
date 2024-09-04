@@ -42,7 +42,9 @@ type Config struct {
 	// LogLevel is log level: environment variable `TOOKHOOK_LOG_LEVEL` or flag `-l`
 	LogLevel string `env:"TOOKHOOK_LOG_LEVEL"`
 	// Plugins is comma separated list of plugins: environment variable `TOOKHOOK_PLUGINS` or flag `-p`
-	Plugins string `env:"TOOKHOOK_PLUGINS"`
+	Plugins  string `env:"TOOKHOOK_PLUGINS"`
+	QueueURI string `env:"TOOKHOOK_QUEUE_URI"`
+	Version  bool
 }
 
 func parseFromCmd(c *Config) error {
@@ -53,6 +55,8 @@ func parseFromCmd(c *Config) error {
 	databaseURI := cmd.StringP("database-uri", "d", "hooks.yml", "database connection string")
 	logLevel := cmd.StringP("log-level", "l", "info", "log level")
 	plugins := cmd.StringP("plugins", "p", "", "comma separated list of plugins")
+	queueURI := cmd.StringP("queue-uri", "q", "127.0.0.1:6379", "redis connection string")
+	version := cmd.BoolP("version", "v", false, "show version")
 
 	if err := cmd.Parse(os.Args[1:]); err != nil {
 		return err
@@ -63,6 +67,8 @@ func parseFromCmd(c *Config) error {
 		DarabaseURI: *databaseURI,
 		LogLevel:    *logLevel,
 		Plugins:     *plugins,
+		Version:     *version,
+		QueueURI:    *queueURI,
 	}
 	return nil
 }
