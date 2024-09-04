@@ -63,8 +63,8 @@ addplugins:
 
 prepare:
 	go mod tidy	
-	go install go.uber.org/mock/mockgen@latest
-	go install honnef.co/go/tools/cmd/staticcheck@latest
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@latest
+	go install go.uber.org/mock/mockgen@v0.4.0
+	go install honnef.co/go/tools/cmd/staticcheck@v0.4.7
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.4.0
+	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@v0.7.7
