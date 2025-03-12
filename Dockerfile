@@ -22,4 +22,4 @@ COPY --from=build /src/build/* /app/
 
 EXPOSE 8080
 
-CMD ["/app/tookhook"]
+CMD ["/app/tookhook", "run"]

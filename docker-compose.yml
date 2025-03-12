@@ -3,12 +3,12 @@ services:
     environment:
       TOOKHOOK_LISTEN: 0.0.0.0:8080
       TOOKHOOK_LOG_LEVEL: debug
-      TOOKHOOK_PLUGINS: /app/pachca,/app/telegram
+      TOOKHOOK_PLUGINS: /app/pachca /app/telegram
       TOOKHOOK_DATABASE_URI: file:///app/config/hooks.yml
       TOOKHOOK_QUEUE_URI: redis:6379
     ports:
       - 8080:8080
-    image: k1nky/tookhook:v0.4.0rc1
+    image: k1nky/tookhook:latest
     volumes:
       - ./config:/app/config:ro
   redis:

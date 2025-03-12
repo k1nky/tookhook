@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/k1nky/tookhook/internal/entity"
 )
 
 const (
@@ -34,6 +35,35 @@ func New(log logger, hooker hookService, monitor monitorService, rs rulesService
 	}
 
 	return a
+}
+
+func readFormToJSON(r *http.Request) (data []byte, err error) {
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+	if data, err = json.Marshal(r.Form); err != nil {
+		return nil, err
+	}
+	return
+}
+
+func newIncomeRequest(r *http.Request) (*entity.IncomeRequest, error) {
+	var (
+		err error
+	)
+	ir := &entity.IncomeRequest{}
+	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
+		ir.Type = entity.ContentTypeJSON
+		ir.Body, err = readFormToJSON(r)
+	} else {
+		if strings.Contains(r.Header.Get("content-type"), "application/json") {
+			ir.Type = entity.ContentTypeJSON
+		} else {
+			ir.Type = entity.ContentTypePlainText
+		}
+		ir.Body, err = io.ReadAll(r.Body)
+	}
+	return ir, err
 }
 
 func (a *Adapter) ListenAndServe(ctx context.Context, addr string) {
@@ -80,13 +110,13 @@ func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
 	requestId := r.Context().Value(KeyRequestId)
 	name := chi.URLParam(r, "name")
 
-	data, err := a.bodyToJSON(r)
+	ir, err := newIncomeRequest(r)
 	if err != nil {
 		a.log.Errorf("request id=%d has bad data: %v", requestId, err)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	if err = a.hs.Forward(r.Context(), name, data); err != nil {
+	if err = a.hs.Forward(r.Context(), name, ir.Body); err != nil {
 		a.log.Errorf("request id=%d failed %v", requestId, err)
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
@@ -114,25 +144,4 @@ func (a *Adapter) Reload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-func (a *Adapter) bodyToJSON(r *http.Request) ([]byte, error) {
-	var (
-		data []byte
-		err  error
-	)
-	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
-		if err := r.ParseForm(); err != nil {
-			return nil, err
-		}
-		if data, err = json.Marshal(r.Form); err != nil {
-			return nil, err
-		}
-	} else {
-		data, err = io.ReadAll(r.Body)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return data, nil
 }

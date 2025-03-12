@@ -14,12 +14,13 @@ import (
 	httphandler "github.com/k1nky/tookhook/internal/adapter/http"
 	"github.com/k1nky/tookhook/internal/adapter/pluginmanager"
 	"github.com/k1nky/tookhook/internal/adapter/taskq"
-	"github.com/k1nky/tookhook/internal/config"
 	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/internal/service/hooker"
 	"github.com/k1nky/tookhook/internal/service/monitor"
 	"github.com/k1nky/tookhook/internal/service/ruler"
 	"github.com/k1nky/tookhook/pkg/logger"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -27,67 +28,45 @@ const (
 	LoggerDefaultLevel = "debug"
 )
 
-var (
-	buildVersion string = "N/A"
-	buildDate    string = "N/A"
-	buildCommit  string = "N/A"
-)
-
 func main() {
-	log := logger.New(LoggerName)
+	log = logger.New(LoggerName)
 	log.SetLevel(LoggerDefaultLevel)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	// load the service config
-	cfg := config.Config{}
-	if err := config.Parse(&cfg); err != nil {
-		log.Errorf("config: %s", err)
-		return
-	}
-	// set log level from config
-	log.SetLevel(cfg.LogLevel)
-	log.Debugf("config: %+v", cfg)
-	// version info was requested
-	if cfg.Version {
-		showVersion()
-		return
-	}
 
-	// run the service
-	if err := run(ctx, cfg, log); err != nil {
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		log.Errorf("%s", err)
 		os.Exit(1)
-		return
 	}
-
-	<-ctx.Done()
-	time.Sleep(1 * time.Second)
 }
 
-func run(ctx context.Context, cfg config.Config, log *logger.Logger) error {
+func runServer(cmd *cobra.Command, args []string) {
+	ctx := cmd.Root().Context()
+
 	// load plugins
 	pm := pluginmanager.New(log)
-	if len(cfg.Plugins) > 0 {
-		for _, v := range strings.Split(cfg.Plugins, ",") {
-			_, name := path.Split(v)
-			if err := pm.Load(ctx, name, v); err != nil {
-				return fmt.Errorf("plugins: %s", err)
-			}
+	for _, v := range viper.GetStringSlice("plugins") {
+		_, name := path.Split(v)
+		if err := pm.Load(ctx, name, v); err != nil {
+			log.Errorf("plugins: %s", err)
+			return
 		}
 	}
 	pm.Run(ctx)
 
 	// open rules store
-	store := database.New(cfg.DarabaseURI, log.Sub("store"))
+	store := database.New(viper.GetString("database-uri"), log.Sub("store"))
 	if err := store.Open(ctx); err != nil {
-		return fmt.Errorf("failed opening db: %s", err)
+		log.Errorf("opening db: %s", err)
+		return
 	}
 	ruleService := ruler.New(pm, store, log.Sub("ruler"))
 	if err := ruleService.Load(ctx); err != nil {
-		return fmt.Errorf("failed loading rules: %s", err)
+		log.Errorf("loading rules: %s", err)
+		return
 	}
-	tq := taskq.New(cfg.QueueURI, entity.ParentQueueName, log.Sub("asynq"))
+	tq := taskq.New(viper.GetString("queue-uri"), entity.ParentQueueName, log.Sub("asynq"))
 	// hook handler service
 	hookService := hooker.New(ruleService, pm, log.Sub("hooker"), tq)
 	// monitor service
@@ -96,11 +75,13 @@ func run(ctx context.Context, cfg config.Config, log *logger.Logger) error {
 
 	// run http server
 	httpServer := httphandler.New(log.Sub("http"), hookService, monitorService, ruleService)
-	httpServer.ListenAndServe(ctx, string(cfg.Listen))
-	return nil
+	httpServer.ListenAndServe(ctx, viper.GetString("listen"))
+
+	<-ctx.Done()
+	time.Sleep(1 * time.Second)
 }
 
-func showVersion() {
+func showVersion(cmd *cobra.Command, args []string) {
 	s := strings.Builder{}
 	fmt.Fprintf(&s, "Build version: %s\n", buildVersion)
 	fmt.Fprintf(&s, "Build date: %s\n", buildDate)
