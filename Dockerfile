@@ -1,4 +1,4 @@
-FROM golang:1.20.6 AS build
+FROM golang:1.22.12 AS build
 
 RUN apt-get update \
     && apt install unzip \
