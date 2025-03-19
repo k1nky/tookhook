@@ -3,10 +3,12 @@ package entity
 import "errors"
 
 var (
-	ErrEmptyValue   = errors.New("can not be empty")
-	ErrInvalidValue = errors.New("invalid value")
-	ErrNotFound     = errors.New("not found")
-	ErrCompile      = errors.New("could not be compiled")
-	ErrSkipRetry    = errors.New("skip retry")
-	ErrNotMatch     = errors.New("not match")
+	ErrEmptyValue      = errors.New("can not be empty")
+	ErrInvalidValue    = errors.New("invalid value")
+	ErrNotFound        = errors.New("not found")
+	ErrCompile         = errors.New("could not be compiled")
+	ErrSkipRetry       = errors.New("skip retry")
+	ErrNotMatch        = errors.New("not match")
+	ErrDiscard         = errors.New("discarded")
+	ErrFailedExecution = errors.New("failed execution")
 )

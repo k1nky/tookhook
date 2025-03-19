@@ -10,6 +10,13 @@ import (
 	"strings"
 )
 
+type TransformAction = string
+
+const (
+	TransformActionApply   TransformAction = ""
+	TransformActionDiscard TransformAction = "discard"
+)
+
 type transform struct {
 	on       *regexp.Regexp
 	regexp   *regexp.Regexp
@@ -18,6 +25,7 @@ type transform struct {
 
 type Transform struct {
 	transform
+	Action TransformAction `yaml:"action"`
 	// RegExp will be applied to the data before the template is executed.
 	RegExp string `yaml:"regexp"`
 	// Template will be applied to the data. The string must be formatted as a text/template package template.
@@ -34,27 +42,31 @@ func bultinFuncs() template.FuncMap {
 	}
 }
 
-func compileRegExp(expr string) (*regexp.Regexp, error) {
+func compileRegExp(expr string) (re *regexp.Regexp, err error) {
 	if isEmpty(expr) {
 		return nil, nil
 	}
-	return regexp.Compile(expr)
+	if re, err = regexp.Compile(expr); err != nil {
+		return nil, err
+	}
+	return
 }
 
 func (t *Transform) Compile() (err error) {
-	if isEmpty(t.Template) {
-		return fmt.Errorf("template value: %w", ErrEmptyValue)
-	}
-	templ := template.New("")
-	templ.Funcs(bultinFuncs())
-	if t.transform.template, err = templ.Parse(t.Template); err != nil {
-		return err
+	if t.Action == TransformActionApply {
+		if !isEmpty(t.Template) {
+			templ := template.New("")
+			templ.Funcs(bultinFuncs())
+			if t.transform.template, err = templ.Parse(t.Template); err != nil {
+				return fmt.Errorf("invalid template value: %w %w", err, ErrCompile)
+			}
+		}
+		if t.transform.regexp, err = compileRegExp(t.RegExp); err != nil {
+			return fmt.Errorf("invalid regexp value: %w %w", err, ErrCompile)
+		}
 	}
 	if t.transform.on, err = compileRegExp(t.On); err != nil {
-		return err
-	}
-	if t.transform.regexp, err = compileRegExp(t.RegExp); err != nil {
-		return err
+		return fmt.Errorf("invalid on value: %w %w", err, ErrCompile)
 	}
 	return nil
 }
@@ -64,6 +76,9 @@ func (t Transform) Execute(data []byte) ([]byte, error) {
 		if ok := t.on.Match(data); !ok {
 			return data, fmt.Errorf("transform: %w", ErrNotMatch)
 		}
+	}
+	if t.Action == TransformActionDiscard {
+		return nil, fmt.Errorf("transform: %w", ErrDiscard)
 	}
 	if t.template == nil {
 		return data, nil
@@ -82,12 +97,12 @@ func (t Transform) Execute(data []byte) ([]byte, error) {
 func (t Transform) applyTemplateByJson(data []byte) ([]byte, error) {
 	m := map[string]interface{}{}
 	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transform: %w %w", err, ErrFailedExecution)
 	}
 
 	buf := bytes.NewBuffer(nil)
 	if err := t.template.Execute(buf, m); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transform: %w %w", err, ErrFailedExecution)
 	}
 	return buf.Bytes(), nil
 }
@@ -96,7 +111,7 @@ func (t Transform) applyTemplateByJson(data []byte) ([]byte, error) {
 func (t Transform) applyTemplate(data any) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	if err := t.template.Execute(buf, data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("transform: %w %w", err, ErrFailedExecution)
 	}
 	return buf.Bytes(), nil
 }
