@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransformationExecuteByJsonMapKeys(t *testing.T) {
+func TestTransformExecuteByJsonMapKeys(t *testing.T) {
 	templ := `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("It is Select 1 at 2024-07-11T12:40:31.574Z on hostname")
@@ -19,7 +19,7 @@ func TestTransformationExecuteByJsonMapKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransformationExecuteByJsonEmbeddedKeys(t *testing.T) {
+func TestTransformExecuteByJsonEmbeddedKeys(t *testing.T) {
 	templ := `It is {{ .deployment.environmentName }}`
 	data := []byte(`{
 		"uuid" : "fe6aed0c-b672-43c9-a9d8-eb3f81215ab3",
@@ -41,7 +41,7 @@ func TestTransformationExecuteByJsonEmbeddedKeys(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransformationExecuteByJsonLostValues(t *testing.T) {
+func TestTransformExecuteByJsonLostValues(t *testing.T) {
 	templ := `{{ .message }} and{{ .message2 }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", "type": "app_log"}`)
 	expected := []byte("Select 1 and")
@@ -54,7 +54,7 @@ func TestTransformationExecuteByJsonLostValues(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransformationExecuteByJsonInvalidJSON(t *testing.T) {
+func TestTransformExecuteByJsonInvalidJSON(t *testing.T) {
 	templ := `{{ .message }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", `)
 	tf := &Transform{
@@ -66,7 +66,7 @@ func TestTransformationExecuteByJsonInvalidJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestTransformationExecuteByRegexp(t *testing.T) {
+func TestTransformExecuteByRegexp(t *testing.T) {
 	data := []byte(`{"name": "Name", "data": "My Data"}`)
 	expected := []byte("Got My Data")
 	tf := &Transform{
@@ -79,7 +79,7 @@ func TestTransformationExecuteByRegexp(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransformationExecuteByRegexpNotMatch(t *testing.T) {
+func TestTransformExecuteByRegexpNotMatch(t *testing.T) {
 	data := []byte(`{"name": "Name", "data": "My Data"}`)
 	tf := &Transform{
 		Template: "Got {{ index . 1 }}",
@@ -91,7 +91,7 @@ func TestTransformationExecuteByRegexpNotMatch(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransformationExecuteNotMatch(t *testing.T) {
+func TestTransformExecuteNotMatch(t *testing.T) {
 	templ := `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`
 	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
 	tf := &Transform{
@@ -137,4 +137,23 @@ func TestTransformCompile(t *testing.T) {
 		})
 	}
 
+}
+
+func TestTransformMultiple(t *testing.T) {
+	templ := `{{ .message }}`
+	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
+	tf := &Transforms{
+		&Transform{
+			Template: templ,
+			On:       `NOT_MATCH`,
+		},
+		&Transform{
+			Template: templ,
+			On:       `INFO`,
+		},
+	}
+	tf.Compile()
+	got, err := tf.Execute(data)
+	assert.Equal(t, []byte("Select 1"), got)
+	assert.NoError(t, err)
 }

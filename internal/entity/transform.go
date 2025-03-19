@@ -3,9 +3,11 @@ package entity
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"regexp"
+	"strings"
 )
 
 type transform struct {
@@ -26,6 +28,12 @@ type Transform struct {
 
 type Transforms []*Transform
 
+func bultinFuncs() template.FuncMap {
+	return template.FuncMap{
+		"title": strings.Title,
+	}
+}
+
 func compileRegExp(expr string) (*regexp.Regexp, error) {
 	if isEmpty(expr) {
 		return nil, nil
@@ -37,7 +45,9 @@ func (t *Transform) Compile() (err error) {
 	if isEmpty(t.Template) {
 		return fmt.Errorf("template value: %w", ErrEmptyValue)
 	}
-	if t.transform.template, err = template.New("").Parse(t.Template); err != nil {
+	templ := template.New("")
+	templ.Funcs(bultinFuncs())
+	if t.transform.template, err = templ.Parse(t.Template); err != nil {
 		return err
 	}
 	if t.transform.on, err = compileRegExp(t.On); err != nil {
@@ -52,7 +62,7 @@ func (t *Transform) Compile() (err error) {
 func (t Transform) Execute(data []byte) ([]byte, error) {
 	if t.on != nil {
 		if ok := t.on.Match(data); !ok {
-			return data, nil
+			return data, fmt.Errorf("transform: %w", ErrNotMatch)
 		}
 	}
 	if t.template == nil {
@@ -100,9 +110,14 @@ func (t Transforms) Compile() error {
 	return nil
 }
 
-func (t Transforms) Execute(data []byte) ([]byte, error) {
+func (t Transforms) Execute(data []byte) (transformed []byte, err error) {
+	transformed = data
 	for _, t := range t {
-		return t.Execute(data)
+		transformed, err = t.Execute(data)
+		if errors.Is(err, ErrNotMatch) {
+			continue
+		}
+		return
 	}
-	return data, nil
+	return
 }

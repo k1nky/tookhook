@@ -8,4 +8,5 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrCompile      = errors.New("could not be compiled")
 	ErrSkipRetry    = errors.New("skip retry")
+	ErrNotMatch     = errors.New("not match")
 )
