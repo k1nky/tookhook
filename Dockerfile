@@ -1,4 +1,4 @@
-FROM golang:1.22.12 AS build
+FROM mirror.gcr.io/golang:1.22.12 AS build
 
 RUN apt-get update \
     && apt install unzip \
@@ -14,7 +14,11 @@ RUN make prepare
 RUN make build \
     && make plugin
 
-FROM alpine:3.19
+FROM mirror.gcr.io/alpine:3.19
+
+LABEL org.opencontainers.image.source="https://github.com/k1nky/tookhook"
+LABEL org.opencontainers.image.description="TookHook is a webhook server with pluggable handlers."
+LABEL org.opencontainers.image.licenses="Apache 2.0"
 
 RUN apk add --no-cache tzdata
 
