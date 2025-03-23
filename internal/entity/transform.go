@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"html/template"
 	"regexp"
-	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type TransformAction = string
@@ -38,7 +40,7 @@ type Transforms []*Transform
 
 func bultinFuncs() template.FuncMap {
 	return template.FuncMap{
-		"title": strings.Title,
+		"title": cases.Title(language.Und).String,
 	}
 }
 

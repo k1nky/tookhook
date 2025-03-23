@@ -119,7 +119,7 @@ func (suite *serviceHookerSuite) TestForward_MultiplePlugins() {
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForwardMultiple_PluginsDisabled() {
+func (suite *serviceHookerSuite) TestForward_MultiplePluginsDisabled() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
 		Income: "test",
 		Handlers: []*entity.Handler{
@@ -145,6 +145,25 @@ func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
 	h := &entity.Handler{
 		Type: "plugin1",
 		On:   "123",
+	}
+	h.Compile()
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+		Income:   "test",
+		Handlers: []*entity.Handler{h},
+	})
+	suite.pm.EXPECT().Get(gomock.Any()).Times(0)
+	err := suite.svc.Forward(context.TODO(), "test", []byte("abc"))
+	suite.NoError(err)
+}
+
+func (suite *serviceHookerSuite) TestForward_Discard() {
+	h := &entity.Handler{
+		Type: "plugin1",
+		PreTransform: entity.Transforms{
+			&entity.Transform{
+				Action: entity.TransformActionDiscard,
+			},
+		},
 	}
 	h.Compile()
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{

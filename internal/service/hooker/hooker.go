@@ -3,6 +3,7 @@ package hooker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
@@ -36,16 +37,22 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 	}
 	for _, h := range rule.Handlers {
 		if h.Disabled {
-			svc.log.Debugf("handler %s %s skipped", h.Type)
+			svc.log.Debugf("handler %s %s skipped", rule.Income, h.Type)
 			continue
 		}
 		if !h.Match(data) {
-			svc.log.Debugf("handler %s %s skipped", h.Type)
+			svc.log.Debugf("handler %s %s skipped", rule.Income, h.Type)
 			continue
 		}
 		content, err := h.Content(data)
 		if err != nil {
-			return err
+			if errors.Is(err, entity.ErrDiscard) {
+				svc.log.Debugf("handler %s %s discarded", rule.Income, h.Type)
+				continue
+			}
+			if !errors.Is(err, entity.ErrNotMatch) {
+				return err
+			}
 		}
 		if fwd := svc.pm.Get(h.Type); fwd == nil {
 			continue
