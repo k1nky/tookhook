@@ -51,7 +51,7 @@ plugin-dev:
 	$(call pluginsmake,plugin-dev)
 
 docker:
-	docker build -t k1nky/tookhook:latest .
+	docker build -t ghcr.io/k1nky/tookhook:latest .
 
 run:
 	go run ./cmd
