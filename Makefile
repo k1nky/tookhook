@@ -57,8 +57,10 @@ run:
 	go run ./cmd
 
 addplugins:
-	git submodule add --force --name telegram git@github.com:k1nky/tookhook-plugin-telegram.git plugins/telegram
-	git submodule add --force --name pachca git@github.com:k1nky/tookhook-plugin-pachca.git plugins/pachca
+	git submodule add --force --name telegram github.com:k1nky/tookhook-plugin-telegram.git plugins/telegram
+	git submodule add --force --name pachca github.com:k1nky/tookhook-plugin-pachca.git plugins/pachca
+
+updateplugins
 	git submodule update --init --recursive --remote
 
 prepare:
