@@ -10,10 +10,10 @@ WORKDIR /src
 
 COPY . .
 
+RUN apt-get update && apt install -y protobuf-compiler
+
 RUN make prepare
-RUN make clean && make addplugins
-RUN make build \
-    && make plugin
+RUN make clean addplugins build plugin
 
 FROM mirror.gcr.io/alpine:3.19
 
