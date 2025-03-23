@@ -60,7 +60,7 @@ addplugins:
 	git submodule add --force --name telegram github.com:k1nky/tookhook-plugin-telegram.git plugins/telegram
 	git submodule add --force --name pachca github.com:k1nky/tookhook-plugin-pachca.git plugins/pachca
 
-updateplugins
+updateplugins:
 	git submodule update --init --recursive --remote
 
 prepare:
