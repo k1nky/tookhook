@@ -11,6 +11,7 @@ WORKDIR /src
 COPY . .
 
 RUN make prepare
+RUN make addplugins
 RUN make build \
     && make plugin
 
