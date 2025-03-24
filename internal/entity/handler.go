@@ -26,7 +26,7 @@ type Handler struct {
 	On string `yaml:"on"`
 	// List of transformations that will be executed before being passed to the plugin.
 	// The first one that matches the condition `On` is applied.
-	PreTransform Transforms `yaml:"pre"`
+	PreTransform Actions `yaml:"pre"`
 	// If true the handler will be skipped.
 	Disabled bool `yaml:"disabled"`
 }

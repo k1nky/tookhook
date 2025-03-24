@@ -3,37 +3,35 @@ package entity
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"html/template"
+	"net/http"
 	"regexp"
+	"text/template"
+	"time"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
-type TransformAction = string
+type TransformDataType string
 
 const (
-	TransformActionApply   TransformAction = ""
-	TransformActionDiscard TransformAction = "discard"
+	DataJSON  TransformDataType = "json"
+	DataPlain TransformDataType = "plain"
 )
 
 type transform struct {
-	on       *regexp.Regexp
 	regexp   *regexp.Regexp
 	template *template.Template
 }
 
 type Transform struct {
 	transform
-	Action TransformAction `yaml:"action"`
 	// RegExp will be applied to the data before the template is executed.
 	RegExp string `yaml:"regexp"`
 	// Template will be applied to the data. The string must be formatted as a text/template package template.
-	Template string `yaml:"template"`
-	// On is a regexp, transformation will be applied if the regexp is matched.
-	On string `yaml:"on"`
+	Template string            `yaml:"template"`
+	DataType TransformDataType `yaml:"data_type"`
 }
 
 type Transforms []*Transform
@@ -41,6 +39,22 @@ type Transforms []*Transform
 func bultinFuncs() template.FuncMap {
 	return template.FuncMap{
 		"title": cases.Title(language.Und).String,
+		"httpGet": func(url string) (string, error) {
+			cli := http.Client{
+				Timeout: 10 * time.Second,
+			}
+			response, err := cli.Get(url)
+			if err != nil {
+				return "", err
+			}
+			defer response.Body.Close()
+			body := bytes.NewBuffer(nil)
+			if _, err := body.ReadFrom(response.Body); err != nil {
+				return "", err
+			}
+
+			return body.String(), nil
+		},
 	}
 }
 
@@ -55,33 +69,23 @@ func compileRegExp(expr string) (re *regexp.Regexp, err error) {
 }
 
 func (t *Transform) Compile() (err error) {
-	if t.Action == TransformActionApply {
-		if !isEmpty(t.Template) {
-			templ := template.New("")
-			templ.Funcs(bultinFuncs())
-			if t.transform.template, err = templ.Parse(t.Template); err != nil {
-				return fmt.Errorf("invalid template value: %w %w", err, ErrCompile)
-			}
-		}
-		if t.transform.regexp, err = compileRegExp(t.RegExp); err != nil {
-			return fmt.Errorf("invalid regexp value: %w %w", err, ErrCompile)
+	if t.DataType == "" {
+		t.DataType = DataJSON
+	}
+	if !isEmpty(t.Template) {
+		templ := template.New("")
+		templ.Funcs(bultinFuncs())
+		if t.template, err = templ.Parse(t.Template); err != nil {
+			return fmt.Errorf("invalid template value: %w %w", err, ErrCompile)
 		}
 	}
-	if t.transform.on, err = compileRegExp(t.On); err != nil {
-		return fmt.Errorf("invalid on value: %w %w", err, ErrCompile)
+	if t.regexp, err = compileRegExp(t.RegExp); err != nil {
+		return fmt.Errorf("invalid regexp value: %w %w", err, ErrCompile)
 	}
 	return nil
 }
 
-func (t Transform) Execute(data []byte) ([]byte, error) {
-	if t.on != nil {
-		if ok := t.on.Match(data); !ok {
-			return data, fmt.Errorf("transform: %w", ErrNotMatch)
-		}
-	}
-	if t.Action == TransformActionDiscard {
-		return nil, fmt.Errorf("transform: %w", ErrDiscard)
-	}
+func (t *Transform) Execute(data []byte) ([]byte, error) {
 	if t.template == nil {
 		return data, nil
 	}
@@ -92,7 +96,31 @@ func (t Transform) Execute(data []byte) ([]byte, error) {
 		}
 		return t.applyTemplate(found[0])
 	}
-	return t.applyTemplateByJson(data)
+	if t.DataType == DataJSON {
+		return t.applyTemplateByJson(data)
+	}
+
+	return t.applyTemplate(data)
+
+}
+
+func (t Transforms) Compile() error {
+	for _, v := range t {
+		if err := v.Compile(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (t Transforms) Execute(data []byte) (transformed []byte, err error) {
+	transformed = data
+	for _, v := range t {
+		if transformed, err = v.Execute(transformed); err != nil {
+			return nil, err
+		}
+	}
+	return
 }
 
 // applyTemplateByJson render the template with JSON `data`.
@@ -116,25 +144,4 @@ func (t Transform) applyTemplate(data any) ([]byte, error) {
 		return nil, fmt.Errorf("transform: %w %w", err, ErrFailedExecution)
 	}
 	return buf.Bytes(), nil
-}
-
-func (t Transforms) Compile() error {
-	for _, v := range t {
-		if err := v.Compile(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (t Transforms) Execute(data []byte) (transformed []byte, err error) {
-	transformed = data
-	for _, t := range t {
-		transformed, err = t.Execute(data)
-		if errors.Is(err, ErrNotMatch) {
-			continue
-		}
-		return
-	}
-	return
 }

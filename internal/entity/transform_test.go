@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransform_Execute(t *testing.T) {
+func TestTransforms_Execute(t *testing.T) {
 	tests := []struct {
 		name       string
-		tf         *Transform
+		tf         Transforms
 		data       []byte
 		wantError  error
 		wantResult []byte
@@ -18,8 +18,10 @@ func TestTransform_Execute(t *testing.T) {
 			name:       "JSON with Map Keys",
 			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
 			wantResult: []byte("It is Select 1 at 2024-07-11T12:40:31.574Z on hostname"),
-			tf: &Transform{
-				Template: `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`,
+			tf: Transforms{
+				&Transform{
+					Template: `It is {{ .message }} at {{ index . "@timestamp" }} on {{ index . "host.name" }}`,
+				},
 			},
 		},
 		{
@@ -35,62 +37,82 @@ func TestTransform_Execute(t *testing.T) {
 			  }
 			`),
 			wantResult: []byte("It is Production Docker"),
-			tf: &Transform{
-				Template: "It is {{ .deployment.environmentName }}",
+			tf: Transforms{
+				&Transform{
+					Template: "It is {{ .deployment.environmentName }}",
+				},
 			},
 		},
 		{
 			name:       "JSON with not exist key",
 			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", "type": "app_log"}`),
-			wantResult: []byte("Select 1 and"),
-			tf: &Transform{
-				Template: "{{ .message }} and{{ .message2 }}",
+			wantResult: []byte("Select 1 and <no value>"),
+			tf: Transforms{
+				&Transform{
+					Template: "{{ .message }} and {{ .message2 }}",
+				},
 			},
 		},
 		{
 			name:      "Invalid JSON",
 			data:      []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "message": "Select 1", `),
 			wantError: ErrFailedExecution,
-			tf: &Transform{
-				Template: "{{ .message }}",
-			},
-		},
-		{
-			name:       "Not match",
-			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
-			wantError:  ErrNotMatch,
-			wantResult: []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
-			tf: &Transform{
-				On: "NOT_MATCH",
+			tf: Transforms{
+				&Transform{
+					Template: "{{ .message }}",
+				},
 			},
 		},
 		{
 			name:       "Regexp Not Match",
 			data:       []byte(`{"name": "Name", "data": "My Data"}`),
 			wantResult: []byte(`{"name": "Name", "data": "My Data"}`),
-			tf: &Transform{
-				Template: "Got {{ index . 1 }}",
-				RegExp:   `not_match\":\s*\"([^\"]+)`,
+			tf: Transforms{
+				&Transform{
+					Template: "Got {{ index . 1 }}",
+					RegExp:   `not_match\":\s*\"([^\"]+)`,
+				},
 			},
 		},
 		{
 			name:       "Regexp Not Match",
 			data:       []byte(`{"name": "Name", "data": "My Data"}`),
 			wantResult: []byte(`Got My Data`),
-			tf: &Transform{
-				Template: "Got {{ index . 1 }}",
-				RegExp:   `data\":\s*\"([^\"]+)`,
+			tf: Transforms{
+				&Transform{
+					Template: "Got {{ index . 1 }}",
+					RegExp:   `data\":\s*\"([^\"]+)`,
+				},
 			},
 		},
 		{
-			name:      "Discard",
-			data:      []byte(`{"name": "Name", "data": "My Data"}`),
-			wantError: ErrDiscard,
-			tf: &Transform{
-				Action: "discard",
+			name:       "Multiple templates",
+			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
+			wantResult: []byte("Select 1"),
+			tf: Transforms{
+				&Transform{
+					Template: `{"msg": "{{ .message }}"}`,
+				},
+				&Transform{
+					Template: `{{ .msg }}`,
+				},
+			},
+		},
+		{
+			name:       "Multiple templates 2",
+			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "uri": "https://httpbin.io/json"}`),
+			wantResult: []byte("Sample Slide Show"),
+			tf: Transforms{
+				&Transform{
+					Template: `{{ httpGet .uri }}`,
+				},
+				&Transform{
+					Template: `{{ .slideshow.title }}`,
+				},
 			},
 		},
 	}
+	//
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.tf.Compile()
@@ -103,97 +125,72 @@ func TestTransform_Execute(t *testing.T) {
 
 func TestTransform_Compile(t *testing.T) {
 	tests := []struct {
-		name         string
-		tf           *Transform
-		wantError    error
-		wantTemplate bool
-		wantRegExp   bool
-		wantOn       bool
+		name      string
+		tf        Transforms
+		wantError error
 	}{
 		{
 			name: "Empty template",
-			tf: &Transform{
-				Template: "",
+			tf: Transforms{
+				&Transform{
+					Template: "",
+				},
 			},
 		},
 		{
 			name: "Invalid template",
-			tf: &Transform{
-				Template: "{{ .value",
+			tf: Transforms{
+				&Transform{
+					Template: "{{ .value",
+				},
 			},
 			wantError: ErrCompile,
 		},
 		{
 			name: "Valid template",
-			tf: &Transform{
-				Template: "{{ .value }}",
+			tf: Transforms{
+				&Transform{
+					Template: "{{ .value }}",
+				},
 			},
-			wantTemplate: true,
 		},
 		{
-			name: "Invalid On value",
-			tf: &Transform{
-				Template: "invalid",
-				On:       ")",
+			name: "Invalid second template",
+			tf: Transforms{
+				&Transform{
+					Template: "{{ .value }}",
+				},
+				&Transform{
+					Template: "{{ .value",
+				},
 			},
-			wantError:    ErrCompile,
-			wantTemplate: true,
-		},
-		{
-			name: "Valid On value",
-			tf: &Transform{
-				Template: "valid",
-				On:       ".*",
-			},
-			wantTemplate: true,
-			wantOn:       true,
+			wantError: ErrCompile,
 		},
 		{
 			name: "Invalid RegExp value",
-			tf: &Transform{
-				Template: "invalid",
-				RegExp:   ")",
+			tf: Transforms{
+				&Transform{
+					Template: "invalid",
+					RegExp:   ")",
+				},
 			},
-			wantError:    ErrCompile,
-			wantTemplate: true,
+			wantError: ErrCompile,
 		},
 		{
 			name: "Valid RegExp value",
-			tf: &Transform{
-				Template: "valid",
-				RegExp:   ".*",
+			tf: Transforms{
+				&Transform{
+					Template: "valid",
+					RegExp:   ".*",
+				},
 			},
-			wantTemplate: true,
-			wantRegExp:   true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.tf.Compile()
 			assert.ErrorIs(t, got, tt.wantError)
-			assert.Equal(t, tt.wantTemplate, tt.tf.template != nil, "unexpected template")
-			assert.Equal(t, tt.wantOn, tt.tf.on != nil, "unexpected on")
-			assert.Equal(t, tt.wantRegExp, tt.tf.regexp != nil, "unexpected regexp")
 		})
 	}
 
-}
-
-func TestTransforms_Compile(t *testing.T) {
-	templ := `{{ .message }}`
-	data := []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`)
-	tf := &Transforms{
-		&Transform{
-			Template: templ,
-			On:       `NOT_MATCH`,
-		},
-		&Transform{
-			Template: templ,
-			On:       `INFO`,
-		},
-	}
-	tf.Compile()
-	got, err := tf.Execute(data)
-	assert.Equal(t, []byte("Select 1"), got)
-	assert.NoError(t, err)
 }

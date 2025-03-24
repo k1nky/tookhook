@@ -17,9 +17,13 @@ func TestHandlerContentWithoutTransform(t *testing.T) {
 
 func TestHandlerContentWithTransform(t *testing.T) {
 	h := Handler{
-		PreTransform: Transforms{
-			&Transform{
-				Template: "{{ .data }}",
+		PreTransform: Actions{
+			&Action{
+				Transforms: Transforms{
+					&Transform{
+						Template: "{{ .data }}",
+					},
+				},
 			},
 		},
 	}

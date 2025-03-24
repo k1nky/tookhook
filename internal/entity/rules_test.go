@@ -72,8 +72,16 @@ func TestRulesValidateNoError(t *testing.T) {
 
 func TestHandlerContentWithTemplate(t *testing.T) {
 	h := Handler{
-		Type:         "handler1",
-		PreTransform: Transforms{&Transform{Template: "{{ .message }}"}},
+		Type: "handler1",
+		PreTransform: Actions{
+			&Action{
+				Transforms: Transforms{
+					&Transform{
+						Template: "{{ .message }}",
+					},
+				},
+			},
+		},
 	}
 	h.Compile()
 	data := []byte(`{"message": "Message", "text": "Text"}`)

@@ -159,9 +159,9 @@ func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
 func (suite *serviceHookerSuite) TestForward_Discard() {
 	h := &entity.Handler{
 		Type: "plugin1",
-		PreTransform: entity.Transforms{
-			&entity.Transform{
-				Action: entity.TransformActionDiscard,
+		PreTransform: entity.Actions{
+			&entity.Action{
+				Type: entity.ActionTypeDiscard,
 			},
 		},
 	}
