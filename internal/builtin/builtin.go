@@ -10,6 +10,7 @@ import (
 const (
 	LogHandlerName  = "~log"
 	ExecHandlerName = "~exec"
+	HttpHandlerName = "~http"
 )
 
 type builtinPlugin struct {
@@ -26,6 +27,8 @@ func NewHandler(name string, log logger) plugin.Plugin {
 		return NewLogHandler(log)
 	case ExecHandlerName:
 		return NewExecHandler(log)
+	case HttpHandlerName:
+		return NewHttpHandler(log)
 	}
 	return nil
 }

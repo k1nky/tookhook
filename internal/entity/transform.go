@@ -2,13 +2,14 @@ package entity
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
 	"text/template"
-	"time"
 
+	"github.com/k1nky/tookhook/pkg/httpclient"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -40,20 +41,12 @@ func bultinFuncs() template.FuncMap {
 	return template.FuncMap{
 		"title": cases.Title(language.Und).String,
 		"httpGet": func(url string) (string, error) {
-			cli := http.Client{
-				Timeout: 10 * time.Second,
-			}
-			response, err := cli.Get(url)
+			body, err := httpclient.SendRequest(context.Background(), http.MethodGet, url, nil)
 			if err != nil {
 				return "", err
 			}
-			defer response.Body.Close()
-			body := bytes.NewBuffer(nil)
-			if _, err := body.ReadFrom(response.Body); err != nil {
-				return "", err
-			}
 
-			return body.String(), nil
+			return string(body), nil
 		},
 	}
 }
