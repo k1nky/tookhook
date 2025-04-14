@@ -6,9 +6,11 @@ import (
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 	"github.com/k1nky/tookhook/internal/service/hooker/mock"
 	log "github.com/k1nky/tookhook/pkg/logger"
 	pluginmock "github.com/k1nky/tookhook/pkg/plugin/mock"
+	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 )
@@ -40,7 +42,7 @@ func (suite *serviceHookerSuite) TestForward_NotFound() {
 }
 
 func (suite *serviceHookerSuite) TestForward_RuleDisabled() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income:   "test",
 		Disabled: true,
 	})
@@ -49,9 +51,9 @@ func (suite *serviceHookerSuite) TestForward_RuleDisabled() {
 }
 
 func (suite *serviceHookerSuite) TestForward_NoPlugin() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income: "test",
-		Handlers: []*entity.Handler{
+		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -63,9 +65,9 @@ func (suite *serviceHookerSuite) TestForward_NoPlugin() {
 }
 
 func (suite *serviceHookerSuite) TestForward_Success() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income: "test",
-		Handlers: []*entity.Handler{
+		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -81,9 +83,9 @@ func (suite *serviceHookerSuite) TestForward_Success() {
 }
 
 func (suite *serviceHookerSuite) TestForward_EnququeFailed() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income: "test",
-		Handlers: []*entity.Handler{
+		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -99,9 +101,9 @@ func (suite *serviceHookerSuite) TestForward_EnququeFailed() {
 }
 
 func (suite *serviceHookerSuite) TestForward_MultiplePlugins() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income: "test",
-		Handlers: []*entity.Handler{
+		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
 			},
@@ -120,9 +122,9 @@ func (suite *serviceHookerSuite) TestForward_MultiplePlugins() {
 }
 
 func (suite *serviceHookerSuite) TestForward_MultiplePluginsDisabled() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income: "test",
-		Handlers: []*entity.Handler{
+		Handlers: []*rules.Handler{
 			{
 				Type:     "plugin1",
 				Disabled: true,
@@ -142,14 +144,14 @@ func (suite *serviceHookerSuite) TestForward_MultiplePluginsDisabled() {
 }
 
 func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
-	h := &entity.Handler{
+	h := &rules.Handler{
 		Type: "plugin1",
-		On:   "123",
+		On:   *restrings.New("123"),
 	}
 	h.Compile()
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income:   "test",
-		Handlers: []*entity.Handler{h},
+		Handlers: []*rules.Handler{h},
 	})
 	suite.pm.EXPECT().Get(gomock.Any()).Times(0)
 	err := suite.svc.Forward(context.TODO(), "test", []byte("abc"))
@@ -157,18 +159,18 @@ func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
 }
 
 func (suite *serviceHookerSuite) TestForward_Discard() {
-	h := &entity.Handler{
+	h := &rules.Handler{
 		Type: "plugin1",
-		PreTransform: entity.Actions{
-			&entity.Action{
-				Type: entity.ActionTypeDiscard,
+		PreActions: rules.Actions{
+			&rules.Action{
+				Type: rules.ActionTypeDiscard,
 			},
 		},
 	}
 	h.Compile()
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&entity.Hook{
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
 		Income:   "test",
-		Handlers: []*entity.Handler{h},
+		Handlers: []*rules.Handler{h},
 	})
 	suite.pm.EXPECT().Get(gomock.Any()).Times(0)
 	err := suite.svc.Forward(context.TODO(), "test", []byte("abc"))

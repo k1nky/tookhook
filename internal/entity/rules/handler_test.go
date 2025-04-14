@@ -1,9 +1,12 @@
-package entity
+package rules
 
 import (
 	"encoding/json"
 	"testing"
 
+	"github.com/k1nky/tookhook/internal/entity/pipeline/transform"
+	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,17 +20,19 @@ func TestHandlerContentWithoutTransform(t *testing.T) {
 
 func TestHandlerContentWithTransform(t *testing.T) {
 	h := Handler{
-		PreTransform: Actions{
+		PreActions: Actions{
 			&Action{
-				Transforms: Transforms{
-					&Transform{
-						Template: "{{ .data }}",
+				Transforms: transform.Pipeline{
+					&transform.Stage{
+						Type:              transform.StageTypeTemplate,
+						TemplateTransform: &transform.TemplateStage{String: *tstrings.New(`{{ .data }}`)},
 					},
 				},
 			},
 		},
 	}
-	h.PreTransform.Compile()
+	err := h.PreActions.Compile()
+	assert.NoError(t, err)
 	got, err := h.Content([]byte(`{"data": 123}`))
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("123"), got)
@@ -39,7 +44,7 @@ func TestHandlerCompileWithType(t *testing.T) {
 	}
 	err := h.Compile()
 	assert.NoError(t, err)
-	assert.NotNil(t, h.on)
+	assert.NotNil(t, h.On)
 	assert.NotNil(t, h.options)
 }
 
@@ -54,11 +59,10 @@ func TestHandlerCompileBadTypeValue(t *testing.T) {
 func TestHandlerCompileBadOnValue(t *testing.T) {
 	h := &Handler{
 		Type: "handler1",
-		On:   "(abc",
+		On:   *restrings.New("(abc"),
 	}
 	err := h.Compile()
 	assert.Error(t, err)
-	assert.Nil(t, h.on)
 }
 
 func TestHandlerCompileWithOptions(t *testing.T) {

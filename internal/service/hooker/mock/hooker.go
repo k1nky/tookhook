@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	entity "github.com/k1nky/tookhook/internal/entity"
+	rules "github.com/k1nky/tookhook/internal/entity/rules"
 	plugin "github.com/k1nky/tookhook/pkg/plugin"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -42,10 +43,10 @@ func (m *MockrulesStore) EXPECT() *MockrulesStoreMockRecorder {
 }
 
 // GetIncomeHookByName mocks base method.
-func (m *MockrulesStore) GetIncomeHookByName(ctx context.Context, name string) *entity.Hook {
+func (m *MockrulesStore) GetIncomeHookByName(ctx context.Context, name string) *rules.Hook {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIncomeHookByName", ctx, name)
-	ret0, _ := ret[0].(*entity.Hook)
+	ret0, _ := ret[0].(*rules.Hook)
 	return ret0
 }
 

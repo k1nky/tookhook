@@ -1,8 +1,11 @@
-package entity
+package rules
 
 import (
 	"testing"
 
+	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/pkg/thstrings"
+	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,18 +20,18 @@ func TestActions_Execute(t *testing.T) {
 		{
 			name:       "Not match",
 			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
-			wantError:  ErrNotMatch,
+			wantError:  entity.ErrNotMatch,
 			wantResult: []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
 			a: Actions{
 				&Action{
-					On: "NOT_MATCH",
+					On: *restrings.New("NOT_MATCH"),
 				},
 			},
 		},
 		{
 			name:      "Discard",
 			data:      []byte(`{"name": "Name", "data": "My Data"}`),
-			wantError: ErrDiscard,
+			wantError: entity.ErrDiscard,
 			a: Actions{
 				&Action{
 					Type: ActionTypeDiscard,
@@ -62,16 +65,16 @@ func TestActions_Compile(t *testing.T) {
 			name: "Invalid On value",
 			a: Actions{
 				&Action{
-					On: ")",
+					On: *restrings.New(")"),
 				},
 			},
-			wantError: ErrCompile,
+			wantError: thstrings.ErrCompile,
 		},
 		{
 			name: "Valid On value",
 			a: Actions{
 				&Action{
-					On: ".*",
+					On: *restrings.New(".*"),
 				},
 			},
 		},

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 )
 
 // Database is adapter to database.
@@ -13,7 +13,7 @@ type Database interface {
 	Open(ctx context.Context) (err error)
 	// Close connection to database.
 	Close() error
-	GetRules(ctx context.Context) (*entity.Rules, error)
+	GetRules(ctx context.Context) (*rules.Rules, error)
 }
 
 type logger interface {

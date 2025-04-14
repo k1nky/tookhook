@@ -1,8 +1,11 @@
-package entity
+package rules
 
 import (
 	"testing"
 
+	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/pipeline/transform"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +25,7 @@ func TestRulesValidateFailed(t *testing.T) {
 					},
 				},
 			},
-			want: ErrEmptyValue,
+			want: entity.ErrEmptyValue,
 		},
 		{
 			name: "EmptyOutcome",
@@ -34,7 +37,7 @@ func TestRulesValidateFailed(t *testing.T) {
 					},
 				},
 			},
-			want: ErrEmptyValue,
+			want: entity.ErrEmptyValue,
 		},
 	}
 	for _, tt := range tests {
@@ -73,11 +76,12 @@ func TestRulesValidateNoError(t *testing.T) {
 func TestHandlerContentWithTemplate(t *testing.T) {
 	h := Handler{
 		Type: "handler1",
-		PreTransform: Actions{
+		PreActions: Actions{
 			&Action{
-				Transforms: Transforms{
-					&Transform{
-						Template: "{{ .message }}",
+				Transforms: transform.Pipeline{
+					&transform.Stage{
+						Type:              transform.StageTypeTemplate,
+						TemplateTransform: &transform.TemplateStage{String: *tstrings.New("{{ .message }}")},
 					},
 				},
 			},

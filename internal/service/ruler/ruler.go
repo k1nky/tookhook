@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 )
 
 type Service struct {
 	log   logger
 	pm    pluginmanager
-	rules *entity.Rules
+	rules *rules.Rules
 	store storage
 }
 
@@ -25,8 +25,8 @@ func New(pm pluginmanager, store storage, log logger) *Service {
 }
 
 // GetIncomeHookByName returns income hook definition by name.
-func (svc *Service) GetIncomeHookByName(ctx context.Context, name string) *entity.Hook {
-	hook := entity.Hook{}
+func (svc *Service) GetIncomeHookByName(ctx context.Context, name string) *rules.Hook {
+	hook := rules.Hook{}
 	for _, v := range svc.rules.Hooks {
 		if v.Income == name {
 			hook = v
@@ -55,7 +55,7 @@ func (svc *Service) Load(ctx context.Context) error {
 }
 
 // Returns an error if specified rules is invalid.
-func (svc *Service) Validate(ctx context.Context, rules *entity.Rules) error {
+func (svc *Service) Validate(ctx context.Context, rules *rules.Rules) error {
 	if err := rules.Compile(); err != nil {
 		return err
 	}

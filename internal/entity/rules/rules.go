@@ -1,8 +1,10 @@
-package entity
+package rules
 
 import (
 	"fmt"
-	"strings"
+
+	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/pkg/thstrings"
 )
 
 // Hook is the hook specification.
@@ -21,15 +23,11 @@ type Rules struct {
 	Hooks []Hook `yaml:"hooks"`
 }
 
-func isEmpty(s string) bool {
-	return len(strings.TrimSpace(s)) == 0
-}
-
 // Compile checks the rules common syntax and returns en error if there is one.
 func (r *Rules) Compile() (err error) {
 	for _, hook := range r.Hooks {
-		if isEmpty(hook.Income) {
-			return fmt.Errorf("income %w", ErrEmptyValue)
+		if thstrings.IsEmpty(hook.Income) {
+			return fmt.Errorf("income %w", entity.ErrEmptyValue)
 		}
 		for _, h := range hook.Handlers {
 			if err := h.Compile(); err != nil {

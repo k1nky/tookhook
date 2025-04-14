@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	entity "github.com/k1nky/tookhook/internal/entity"
+	rules "github.com/k1nky/tookhook/internal/entity/rules"
 	plugin "github.com/k1nky/tookhook/pkg/plugin"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -93,10 +94,10 @@ func (m *Mockstorage) EXPECT() *MockstorageMockRecorder {
 }
 
 // GetRules mocks base method.
-func (m *Mockstorage) GetRules(ctx context.Context) (*entity.Rules, error) {
+func (m *Mockstorage) GetRules(ctx context.Context) (*rules.Rules, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRules", ctx)
-	ret0, _ := ret[0].(*entity.Rules)
+	ret0, _ := ret[0].(*rules.Rules)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

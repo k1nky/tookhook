@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
@@ -15,7 +16,7 @@ type pluginmanager interface {
 
 //go:generate mockgen -source=contract.go -destination=mock/rules.go -package=mock storage
 type storage interface {
-	GetRules(ctx context.Context) (*entity.Rules, error)
+	GetRules(ctx context.Context) (*rules.Rules, error)
 }
 
 type logger interface {

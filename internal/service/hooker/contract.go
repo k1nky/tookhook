@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock rulesStore
 type rulesStore interface {
-	GetIncomeHookByName(ctx context.Context, name string) *entity.Hook
+	GetIncomeHookByName(ctx context.Context, name string) *rules.Hook
 }
 
 type logger interface {

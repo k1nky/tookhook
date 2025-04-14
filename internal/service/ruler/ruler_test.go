@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 	"github.com/k1nky/tookhook/internal/service/ruler/mock"
 	log "github.com/k1nky/tookhook/pkg/logger"
 	"github.com/k1nky/tookhook/pkg/plugin"
@@ -17,7 +17,7 @@ import (
 
 func TestServiceGetIncomeHookByName(t *testing.T) {
 	type fields struct {
-		rules *entity.Rules
+		rules *rules.Rules
 	}
 	type args struct {
 		ctx  context.Context
@@ -27,13 +27,13 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *entity.Hook
+		want   *rules.Hook
 	}{
 		{
 			name: "not found",
 			fields: fields{
-				rules: &entity.Rules{
-					Hooks: []entity.Hook{
+				rules: &rules.Rules{
+					Hooks: []rules.Hook{
 						{
 							Income: "first",
 						},
@@ -49,8 +49,8 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 		{
 			name: "found",
 			fields: fields{
-				rules: &entity.Rules{
-					Hooks: []entity.Hook{
+				rules: &rules.Rules{
+					Hooks: []rules.Hook{
 						{Income: "first"},
 						{Income: "second"},
 					},
@@ -60,7 +60,7 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 				ctx:  context.TODO(),
 				name: "second",
 			},
-			want: &entity.Hook{Income: "second"},
+			want: &rules.Hook{Income: "second"},
 		},
 	}
 	for _, tt := range tests {
@@ -92,11 +92,11 @@ func (suite *serviceValidateSuite) SetupTest() {
 }
 
 func (suite *serviceValidateSuite) TestInvalidBaseStructure() {
-	rules := &entity.Rules{
-		Hooks: []entity.Hook{
+	rules := &rules.Rules{
+		Hooks: []rules.Hook{
 			{
 				Income: "",
-				Handlers: []*entity.Handler{
+				Handlers: []*rules.Handler{
 					{
 						Type: "plugin_name",
 					},
@@ -110,11 +110,11 @@ func (suite *serviceValidateSuite) TestInvalidBaseStructure() {
 }
 
 func (suite *serviceValidateSuite) TestValidate() {
-	rules := &entity.Rules{
-		Hooks: []entity.Hook{
+	rules := &rules.Rules{
+		Hooks: []rules.Hook{
 			{
 				Income: "Rule1",
-				Handlers: []*entity.Handler{
+				Handlers: []*rules.Handler{
 					{
 						Type: "plugin_name",
 					},
@@ -173,8 +173,8 @@ func (suite *serviceLoadSuite) SetupTest() {
 }
 
 func (suite *serviceLoadSuite) TestGetRulesFailed() {
-	before := &entity.Rules{
-		Hooks: []entity.Hook{
+	before := &rules.Rules{
+		Hooks: []rules.Hook{
 			{Income: "Rule1"},
 		},
 	}
@@ -186,14 +186,14 @@ func (suite *serviceLoadSuite) TestGetRulesFailed() {
 }
 
 func (suite *serviceLoadSuite) TestValidateFailed() {
-	before := &entity.Rules{
-		Hooks: []entity.Hook{
+	before := &rules.Rules{
+		Hooks: []rules.Hook{
 			{Income: "Rule1"},
 		},
 	}
 	suite.svc.rules = before
-	suite.store.EXPECT().GetRules(gomock.Any()).Return(&entity.Rules{
-		Hooks: []entity.Hook{
+	suite.store.EXPECT().GetRules(gomock.Any()).Return(&rules.Rules{
+		Hooks: []rules.Hook{
 			{Income: ""},
 		},
 	}, nil)
@@ -203,13 +203,13 @@ func (suite *serviceLoadSuite) TestValidateFailed() {
 }
 
 func (suite *serviceLoadSuite) TestSuccess() {
-	before := &entity.Rules{
-		Hooks: []entity.Hook{
+	before := &rules.Rules{
+		Hooks: []rules.Hook{
 			{Income: "Rule1"},
 		},
 	}
-	after := &entity.Rules{
-		Hooks: []entity.Hook{
+	after := &rules.Rules{
+		Hooks: []rules.Hook{
 			{Income: "Rule2"},
 		},
 	}

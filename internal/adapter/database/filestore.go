@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/rules"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,7 +26,7 @@ func (fs *FileStore) Open(ctx context.Context) (err error) {
 	return nil
 }
 
-func (fs *FileStore) GetRules(ctx context.Context) (*entity.Rules, error) {
+func (fs *FileStore) GetRules(ctx context.Context) (*rules.Rules, error) {
 	f, err := os.Open(fs.DSN)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (fs *FileStore) GetRules(ctx context.Context) (*entity.Rules, error) {
 	if err != nil {
 		return nil, err
 	}
-	rules := &entity.Rules{}
+	rules := &rules.Rules{}
 	if err := yaml.Unmarshal(data, rules); err != nil {
 		return nil, err
 	}

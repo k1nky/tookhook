@@ -3,11 +3,6 @@ package entity
 type ContentType int
 
 type IncomeRequest struct {
-	Type ContentType
 	Body []byte
+	Type string
 }
-
-const (
-	ContentTypeJSON ContentType = iota
-	ContentTypePlainText
-)

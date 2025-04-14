@@ -52,15 +52,10 @@ func newIncomeRequest(r *http.Request) (*entity.IncomeRequest, error) {
 		err error
 	)
 	ir := &entity.IncomeRequest{}
+	ir.Type = r.Header.Get("content-type")
 	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
-		ir.Type = entity.ContentTypeJSON
 		ir.Body, err = readFormToJSON(r)
 	} else {
-		if strings.Contains(r.Header.Get("content-type"), "application/json") {
-			ir.Type = entity.ContentTypeJSON
-		} else {
-			ir.Type = entity.ContentTypePlainText
-		}
 		ir.Body, err = io.ReadAll(r.Body)
 	}
 	return ir, err
