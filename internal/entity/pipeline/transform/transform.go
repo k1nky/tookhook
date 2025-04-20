@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/k1nky/tookhook/pkg/httpclient"
 	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
@@ -41,7 +42,8 @@ type TemplateStage struct {
 }
 
 type HTTPStage struct {
-	URL tstrings.String `yaml:"url"`
+	URL          tstrings.String `yaml:"url"`
+	TimeoutInSec uint            `yaml:"timeout"`
 }
 
 func (ts Stage) GetTransformer() Transformer {
@@ -79,7 +81,12 @@ func (ht *HTTPStage) Execute(data []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := httpclient.SendRequest(context.Background(), http.MethodGet, string(uri), nil)
+	r := httpclient.Request{
+		Method:  http.MethodGet,
+		URL:     string(uri),
+		Timeout: time.Duration(ht.TimeoutInSec) * time.Second,
+	}
+	body, err := httpclient.SendRequest(context.Background(), r, nil)
 	if err != nil {
 		return nil, err
 	}

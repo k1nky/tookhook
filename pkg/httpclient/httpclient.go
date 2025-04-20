@@ -11,12 +11,22 @@ const (
 	DefaultRequestTimeout = 10 * time.Second
 )
 
-func SendRequest(ctx context.Context, method string, url string, data []byte) ([]byte, error) {
+type Request struct {
+	Method  string
+	URL     string
+	Timeout time.Duration
+}
+
+func SendRequest(ctx context.Context, r Request, data []byte) ([]byte, error) {
+	if r.Timeout == 0 {
+		r.Timeout = DefaultRequestTimeout
+	}
 	client := http.Client{
-		Timeout: DefaultRequestTimeout,
+		Timeout:   r.Timeout,
+		Transport: http.DefaultTransport,
 	}
 	buf := bytes.NewBuffer(data)
-	req, err := http.NewRequestWithContext(ctx, method, url, buf)
+	req, err := http.NewRequestWithContext(ctx, r.Method, r.URL, buf)
 	if err != nil {
 		return nil, err
 	}
