@@ -33,8 +33,14 @@ func bultinFuncs() template.FuncMap {
 			re := regexp.MustCompile(pattern)
 			return re.ReplaceAllString(text, repl)
 		},
-		"stringSlice": func(s ...string) []string {
-			return s
+
+		"reFindAll": func(pattern string, text string) []string {
+			re := regexp.MustCompile(pattern)
+			found := re.FindAllStringSubmatch(text, -1)
+			if len(found) == 0 {
+				return nil
+			}
+			return found[0]
 		},
 		"date": func(fmt string, t time.Time) string {
 			return t.Format(fmt)
@@ -76,18 +82,20 @@ func (ts *String) Compile() (err error) {
 	return nil
 }
 
+// TODO: remove error
 func (ts *String) unmarshalData(data []byte) (any, error) {
 	var (
 		d any = data
 	)
 	d = map[string]interface{}{}
-	if err := json.Unmarshal(data, &d); err != nil {
-		d = []interface{}{}
-		if err := json.Unmarshal(data, &d); err != nil {
-			return string(data), fmt.Errorf("execute: %w %w", err, thstrings.ErrFailedExecution)
-		}
+	if err := json.Unmarshal(data, &d); err == nil {
+		return d, nil
 	}
-	return d, nil
+	d = []interface{}{}
+	if err := json.Unmarshal(data, &d); err == nil {
+		return d, nil
+	}
+	return string(data), nil
 }
 
 func (ts *String) Execute(data []byte) ([]byte, error) {

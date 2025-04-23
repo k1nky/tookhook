@@ -116,3 +116,29 @@ func TestString_UnmarshalYAML(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, String{Template: "abc"}, s)
 }
+
+func TestBuiltin(t *testing.T) {
+	tests := []struct {
+		name       string
+		s          *String
+		data       []byte
+		wantError  error
+		wantResult string
+	}{
+		{
+			name:       "reFindAll",
+			s:          New(`{{ $a := (. | reFindAll "name\":\\s*\"([^\"]+)") }}Hello {{ index $a 1 }}`),
+			data:       []byte(`"name": "Name", "data": "My Data"`),
+			wantError:  nil,
+			wantResult: "Hello Name",
+		},
+	}
+	for _, tt := range tests {
+		err := tt.s.Compile()
+		assert.NoError(t, err)
+		result, err := tt.s.Execute(tt.data)
+		print(string(result))
+		assert.ErrorIs(t, err, tt.wantError)
+		assert.Equal(t, tt.wantResult, string(result))
+	}
+}
