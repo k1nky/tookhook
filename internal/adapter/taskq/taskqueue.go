@@ -67,9 +67,7 @@ func (a *Adapter) processTask(ctx context.Context, t *asynq.Task) error {
 
 func (a *Adapter) Enqueue(ctx context.Context, queueTask *entity.QueueTask) error {
 	t := asynq.NewTask(queueTask.Queue, queueTask.Payload, asynq.MaxRetry(DefaultMaxRetry))
-	ti, err := a.client.EnqueueContext(ctx, t)
-	if err != nil {
-		a.log.Debugf("new task %s into %s", ti.ID, ti.Queue)
-	}
+	// TODO: ti, err := a.client.EnqueueContext(ctx, t) and log ti.ID
+	_, err := a.client.EnqueueContext(ctx, t)
 	return err
 }
