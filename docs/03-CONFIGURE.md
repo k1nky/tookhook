@@ -9,3 +9,36 @@
 
 ## Rules
 
+### Full example
+
+```
+templates:
+  test: &test
+    - transforms:
+        - type: http
+          http:
+            url: "{{ .uri }}"
+        - template: "{{ .slideshow.title }}"
+  siem_events: &siem_events
+    - transforms:
+      - template: |-
+          {{ range $event := .data.events }}
+          {{ $event.text }}
+          {{ end }}
+hooks:
+  - income: test
+    handlers:
+      - type: ~http
+        pre: *test
+        options:
+          method: POST
+          url: "http://localhost:8080/hook/log"
+  - income: test2
+    handlers:
+      - type: ~log
+        pre: *siem_events
+  - income: log
+    handlers:
+      - type: ~log
+
+```

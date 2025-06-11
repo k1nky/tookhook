@@ -7,6 +7,7 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/tasks"
 )
 
 const (
@@ -17,7 +18,7 @@ type Adapter struct {
 	client      *asynq.Client
 	server      *asynq.Server
 	log         logger
-	handler     entity.TaskHandlerFunc
+	handler     tasks.TaskHandlerFunc
 	parentQueue string
 }
 
@@ -39,7 +40,7 @@ func New(addr string, parentQueue string, log logger) *Adapter {
 	}
 }
 
-func (a *Adapter) Process(ctx context.Context, handler entity.TaskHandlerFunc) error {
+func (a *Adapter) Process(ctx context.Context, handler tasks.TaskHandlerFunc) error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(a.parentQueue, a.processTask)
 	a.handler = handler
@@ -54,7 +55,7 @@ func (a *Adapter) Process(ctx context.Context, handler entity.TaskHandlerFunc) e
 }
 
 func (a *Adapter) processTask(ctx context.Context, t *asynq.Task) error {
-	qt := entity.QueueTask{
+	qt := tasks.QueueTask{
 		Queue:   t.Type(),
 		Payload: t.Payload(),
 	}
@@ -65,7 +66,7 @@ func (a *Adapter) processTask(ctx context.Context, t *asynq.Task) error {
 	return err
 }
 
-func (a *Adapter) Enqueue(ctx context.Context, queueTask *entity.QueueTask) error {
+func (a *Adapter) Enqueue(ctx context.Context, queueTask *tasks.QueueTask) error {
 	t := asynq.NewTask(queueTask.Queue, queueTask.Payload, asynq.MaxRetry(DefaultMaxRetry))
 	// TODO: ti, err := a.client.EnqueueContext(ctx, t) and log ti.ID
 	_, err := a.client.EnqueueContext(ctx, t)

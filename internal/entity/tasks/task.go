@@ -1,4 +1,4 @@
-package entity
+package tasks
 
 import (
 	"context"

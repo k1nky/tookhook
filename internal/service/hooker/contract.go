@@ -3,8 +3,8 @@ package hooker
 import (
 	"context"
 
-	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/internal/entity/rules"
+	"github.com/k1nky/tookhook/internal/entity/tasks"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
@@ -25,6 +25,6 @@ type pluginmanager interface {
 
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock taskqueue
 type taskqueue interface {
-	Enqueue(ctx context.Context, queueTask *entity.QueueTask) error
-	Process(ctx context.Context, handler entity.TaskHandlerFunc) error
+	Enqueue(ctx context.Context, queueTask *tasks.QueueTask) error
+	Process(ctx context.Context, handler tasks.TaskHandlerFunc) error
 }

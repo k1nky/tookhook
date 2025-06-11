@@ -14,7 +14,7 @@ import (
 	httphandler "github.com/k1nky/tookhook/internal/adapter/http"
 	"github.com/k1nky/tookhook/internal/adapter/pluginmanager"
 	"github.com/k1nky/tookhook/internal/adapter/taskq"
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/tasks"
 	"github.com/k1nky/tookhook/internal/service/hooker"
 	"github.com/k1nky/tookhook/internal/service/monitor"
 	"github.com/k1nky/tookhook/internal/service/ruler"
@@ -66,7 +66,7 @@ func runServer(cmd *cobra.Command, args []string) {
 		log.Errorf("loading rules: %s", err)
 		return
 	}
-	tq := taskq.New(viper.GetString("queue-uri"), entity.ParentQueueName, log.Sub("asynq"))
+	tq := taskq.New(viper.GetString("queue-uri"), tasks.ParentQueueName, log.Sub("asynq"))
 	// hook handler service
 	hookService := hooker.New(ruleService, pm, log.Sub("hooker"), tq)
 	// monitor service

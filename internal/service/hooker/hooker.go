@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/tasks"
 	"github.com/k1nky/tookhook/pkg/plugin"
 )
 
@@ -57,7 +58,7 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 		if fwd := svc.pm.Get(h.Type); fwd == nil {
 			continue
 		}
-		t := &entity.ForwardTaskPayload{
+		t := &tasks.ForwardTaskPayload{
 			Name:    h.Type,
 			Options: h.AsPluginHandler().Options,
 			Content: content,
@@ -67,8 +68,8 @@ func (svc *Service) Forward(ctx context.Context, name string, data []byte) error
 			svc.log.Errorf("marshaling payload to %s failed: %v", h.Type, err)
 			return err
 		}
-		if err := svc.q.Enqueue(ctx, &entity.QueueTask{
-			Queue:   entity.ForwardQueueName,
+		if err := svc.q.Enqueue(ctx, &tasks.QueueTask{
+			Queue:   tasks.ForwardQueueName,
 			Payload: payload,
 		}); err != nil {
 			svc.log.Errorf("enqueue failed: %v", err)
@@ -82,10 +83,10 @@ func (svc *Service) Run(ctx context.Context) {
 	svc.q.Process(ctx, svc.processQueueTask)
 }
 
-func (svc *Service) processQueueTask(ctx context.Context, qt entity.QueueTask) error {
+func (svc *Service) processQueueTask(ctx context.Context, qt tasks.QueueTask) error {
 	switch qt.Queue {
-	case entity.ForwardQueueName:
-		ftp := entity.ForwardTaskPayload{}
+	case tasks.ForwardQueueName:
+		ftp := tasks.ForwardTaskPayload{}
 		if err := json.Unmarshal(qt.Payload, &ftp); err != nil {
 			return fmt.Errorf("%v: %w", err, entity.ErrSkipRetry)
 		}

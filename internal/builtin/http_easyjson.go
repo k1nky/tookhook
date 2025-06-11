@@ -40,6 +40,8 @@ func easyjson6252c418DecodeGithubComK1nkyTookhookInternalBuiltin(in *jlexer.Lexe
 			out.Method = string(in.String())
 		case "url":
 			out.URL = string(in.String())
+		case "timeout":
+			out.Timeout = uint(in.Uint())
 		default:
 			in.SkipRecursive()
 		}
@@ -63,6 +65,11 @@ func easyjson6252c418EncodeGithubComK1nkyTookhookInternalBuiltin(out *jwriter.Wr
 		const prefix string = ",\"url\":"
 		out.RawString(prefix)
 		out.String(string(in.URL))
+	}
+	{
+		const prefix string = ",\"timeout\":"
+		out.RawString(prefix)
+		out.Uint(uint(in.Timeout))
 	}
 	out.RawByte('}')
 }

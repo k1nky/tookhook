@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "github.com/k1nky/tookhook/internal/entity"
 	rules "github.com/k1nky/tookhook/internal/entity/rules"
+	tasks "github.com/k1nky/tookhook/internal/entity/tasks"
 	plugin "github.com/k1nky/tookhook/pkg/plugin"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -174,7 +174,7 @@ func (m *Mocktaskqueue) EXPECT() *MocktaskqueueMockRecorder {
 }
 
 // Enqueue mocks base method.
-func (m *Mocktaskqueue) Enqueue(ctx context.Context, queueTask *entity.QueueTask) error {
+func (m *Mocktaskqueue) Enqueue(ctx context.Context, queueTask *tasks.QueueTask) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Enqueue", ctx, queueTask)
 	ret0, _ := ret[0].(error)
@@ -188,7 +188,7 @@ func (mr *MocktaskqueueMockRecorder) Enqueue(ctx, queueTask any) *gomock.Call {
 }
 
 // Process mocks base method.
-func (m *Mocktaskqueue) Process(ctx context.Context, handler entity.TaskHandlerFunc) error {
+func (m *Mocktaskqueue) Process(ctx context.Context, handler tasks.TaskHandlerFunc) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Process", ctx, handler)
 	ret0, _ := ret[0].(error)
