@@ -22,6 +22,7 @@ import (
 type Mocklogger struct {
 	ctrl     *gomock.Controller
 	recorder *MockloggerMockRecorder
+	isgomock struct{}
 }
 
 // MockloggerMockRecorder is the mock recorder for Mocklogger.
@@ -96,6 +97,7 @@ func (mr *MockloggerMockRecorder) Infof(template any, args ...any) *gomock.Call 
 type MockhookService struct {
 	ctrl     *gomock.Controller
 	recorder *MockhookServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockhookServiceMockRecorder is the mock recorder for MockhookService.
@@ -133,6 +135,7 @@ func (mr *MockhookServiceMockRecorder) Forward(ctx, r any) *gomock.Call {
 type MockrulesService struct {
 	ctrl     *gomock.Controller
 	recorder *MockrulesServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockrulesServiceMockRecorder is the mock recorder for MockrulesService.
@@ -170,6 +173,7 @@ func (mr *MockrulesServiceMockRecorder) Load(ctx any) *gomock.Call {
 type MockmonitorService struct {
 	ctrl     *gomock.Controller
 	recorder *MockmonitorServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockmonitorServiceMockRecorder is the mock recorder for MockmonitorService.

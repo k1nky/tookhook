@@ -22,6 +22,8 @@ type Adapter struct {
 	parentQueue string
 }
 
+// TODO: add Ping
+
 func New(addr string, parentQueue string, log logger) *Adapter {
 	return &Adapter{
 		client: asynq.NewClient(asynq.RedisClientOpt{
@@ -68,7 +70,6 @@ func (a *Adapter) processTask(ctx context.Context, t *asynq.Task) error {
 
 func (a *Adapter) Enqueue(ctx context.Context, queueTask *tasks.QueueTask) error {
 	t := asynq.NewTask(queueTask.Queue, queueTask.Payload, asynq.MaxRetry(DefaultMaxRetry))
-	// TODO: ti, err := a.client.EnqueueContext(ctx, t) and log ti.ID
 	_, err := a.client.EnqueueContext(ctx, t)
 	return err
 }

@@ -21,6 +21,7 @@ import (
 type Mockpluginmanager struct {
 	ctrl     *gomock.Controller
 	recorder *MockpluginmanagerMockRecorder
+	isgomock struct{}
 }
 
 // MockpluginmanagerMockRecorder is the mock recorder for Mockpluginmanager.
@@ -58,6 +59,7 @@ func (mr *MockpluginmanagerMockRecorder) Health(ctx any) *gomock.Call {
 type MockhookService struct {
 	ctrl     *gomock.Controller
 	recorder *MockhookServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockhookServiceMockRecorder is the mock recorder for MockhookService.
@@ -95,6 +97,7 @@ func (mr *MockhookServiceMockRecorder) Health(ctx any) *gomock.Call {
 type Mockstorage struct {
 	ctrl     *gomock.Controller
 	recorder *MockstorageMockRecorder
+	isgomock struct{}
 }
 
 // MockstorageMockRecorder is the mock recorder for Mockstorage.
@@ -118,6 +121,7 @@ func (m *Mockstorage) EXPECT() *MockstorageMockRecorder {
 type Mocklogger struct {
 	ctrl     *gomock.Controller
 	recorder *MockloggerMockRecorder
+	isgomock struct{}
 }
 
 // MockloggerMockRecorder is the mock recorder for Mocklogger.

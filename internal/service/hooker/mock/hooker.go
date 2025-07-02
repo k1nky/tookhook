@@ -23,6 +23,7 @@ import (
 type MockrulesStore struct {
 	ctrl     *gomock.Controller
 	recorder *MockrulesStoreMockRecorder
+	isgomock struct{}
 }
 
 // MockrulesStoreMockRecorder is the mock recorder for MockrulesStore.
@@ -60,6 +61,7 @@ func (mr *MockrulesStoreMockRecorder) GetIncomeHookByName(ctx, name any) *gomock
 type Mocklogger struct {
 	ctrl     *gomock.Controller
 	recorder *MockloggerMockRecorder
+	isgomock struct{}
 }
 
 // MockloggerMockRecorder is the mock recorder for Mocklogger.
@@ -117,6 +119,7 @@ func (mr *MockloggerMockRecorder) Errorf(template any, args ...any) *gomock.Call
 type Mockpluginmanager struct {
 	ctrl     *gomock.Controller
 	recorder *MockpluginmanagerMockRecorder
+	isgomock struct{}
 }
 
 // MockpluginmanagerMockRecorder is the mock recorder for Mockpluginmanager.
@@ -154,6 +157,7 @@ func (mr *MockpluginmanagerMockRecorder) Get(name any) *gomock.Call {
 type Mocktaskqueue struct {
 	ctrl     *gomock.Controller
 	recorder *MocktaskqueueMockRecorder
+	isgomock struct{}
 }
 
 // MocktaskqueueMockRecorder is the mock recorder for Mocktaskqueue.

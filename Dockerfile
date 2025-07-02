@@ -1,4 +1,4 @@
-FROM mirror.gcr.io/golang:1.22.12 AS build
+FROM mirror.gcr.io/golang:1.24.4 AS build
 
 RUN apt-get update \
     && apt install unzip \
