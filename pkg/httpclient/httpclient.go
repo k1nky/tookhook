@@ -31,11 +31,10 @@ func SendRequest(ctx context.Context, r Request, data []byte) ([]byte, error) {
 		return nil, err
 	}
 	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
+	if response != nil {
+		defer response.Body.Close()
+		buf.Reset()
+		buf.ReadFrom(response.Body)
 	}
-	defer response.Body.Close()
-	buf.Reset()
-	buf.ReadFrom(response.Body)
-	return buf.Bytes(), nil
+	return buf.Bytes(), err
 }

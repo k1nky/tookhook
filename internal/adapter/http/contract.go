@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
 )
 
 type logger interface {
@@ -14,7 +15,7 @@ type logger interface {
 
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock hookService
 type hookService interface {
-	Forward(ctx context.Context, name string, data []byte) error
+	Forward(ctx context.Context, r *hooks.HookRequest) error
 }
 
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock rulesService

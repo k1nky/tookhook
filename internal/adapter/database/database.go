@@ -16,12 +16,6 @@ type Database interface {
 	GetRules(ctx context.Context) (*rules.Rules, error)
 }
 
-type logger interface {
-	Errorf(template string, args ...interface{})
-	Infof(template string, args ...interface{})
-	Debugf(template string, args ...interface{})
-}
-
 // New is factory of database connections.
 func New(dsn string, log logger) Database {
 	if strings.HasPrefix(dsn, "file://") {

@@ -31,7 +31,10 @@ func (l *Logger) SetLevel(level string) error {
 }
 
 func (l *Logger) Debug(args ...interface{}) {
-	l.hcLogger.Debug("", args...)
+	if len(args) == 0 {
+		return
+	}
+	l.hcLogger.Debug(args[0].(string), args[1:]...)
 }
 
 func (l *Logger) Debugf(template string, args ...interface{}) {
@@ -39,7 +42,10 @@ func (l *Logger) Debugf(template string, args ...interface{}) {
 }
 
 func (l *Logger) Info(args ...interface{}) {
-	l.hcLogger.Info("", args...)
+	if len(args) == 0 {
+		return
+	}
+	l.hcLogger.Info(args[0].(string), args[1:]...)
 }
 
 func (l *Logger) Infof(template string, args ...interface{}) {
@@ -47,7 +53,10 @@ func (l *Logger) Infof(template string, args ...interface{}) {
 }
 
 func (l *Logger) Error(args ...interface{}) {
-	l.hcLogger.Error("", args...)
+	if len(args) == 0 {
+		return
+	}
+	l.hcLogger.Error(args[0].(string), args[1:]...)
 }
 
 func (l *Logger) Errorf(template string, args ...interface{}) {
@@ -55,7 +64,10 @@ func (l *Logger) Errorf(template string, args ...interface{}) {
 }
 
 func (l *Logger) Warn(args ...interface{}) {
-	l.hcLogger.Warn("", args...)
+	if len(args) == 0 {
+		return
+	}
+	l.hcLogger.Warn(args[0].(string), args[1:]...)
 }
 
 func (l *Logger) Warnf(template string, args ...interface{}) {
@@ -63,7 +75,10 @@ func (l *Logger) Warnf(template string, args ...interface{}) {
 }
 
 func (l *Logger) Fatal(args ...interface{}) {
-	l.hcLogger.Error("", args...)
+	if len(args) == 0 {
+		return
+	}
+	l.hcLogger.Error(args[0].(string), args[1:]...)
 }
 
 func (l *Logger) AsHCLogger() hclog.Logger {

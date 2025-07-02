@@ -86,13 +86,7 @@ func (ht *HTTPStage) Execute(data []byte) ([]byte, error) {
 		URL:     string(uri),
 		Timeout: time.Duration(ht.TimeoutInSec) * time.Second,
 	}
-	body, err := httpclient.SendRequest(context.Background(), r, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-
+	return httpclient.SendRequest(context.Background(), r, nil)
 }
 
 func (tp Pipeline) Compile() error {

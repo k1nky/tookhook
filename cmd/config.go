@@ -44,9 +44,8 @@ func initCommands() {
 		Short: "Run as server",
 	}
 	runCmd.Flags().StringP("listen", "s", "0.0.0.0:8080", "listen on address")
-	runCmd.Flags().StringP("database-uri", "d", "hooks.yml", "database connection string")
-	runCmd.Flags().StringP("queue-uri", "q", "127.0.0.1:6379", "queue connection string")
-	// runCmd.Flags().StringP("plugins", "p", "", "comma separated list of plugins")
+	runCmd.Flags().String("database-uri", "file://hooks.yml", "database connection string")
+	runCmd.Flags().String("queue-uri", "127.0.0.1:6379", "queue connection string")
 	runCmd.Flags().StringSliceP("plugins", "p", []string{}, "list of plugins")
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(&cobra.Command{

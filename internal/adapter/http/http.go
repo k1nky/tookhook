@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
 )
 
 const (
@@ -47,16 +47,28 @@ func readFormToJSON(r *http.Request) (data []byte, err error) {
 	return
 }
 
-func newIncomeRequest(r *http.Request) (*entity.IncomeRequest, error) {
+func newIncomeRequest(r *http.Request) (*hooks.HookRequest, error) {
 	var (
 		err error
 	)
-	ir := &entity.IncomeRequest{}
-	ir.Type = r.Header.Get("content-type")
-	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
-		ir.Body, err = readFormToJSON(r)
+	ir := &hooks.HookRequest{
+		Meta: hooks.HookRequestMeta{
+			Name: chi.URLParam(r, "name"),
+		},
+		Content: hooks.HookRequestBody{
+			Type: r.Header.Get("content-type"),
+		},
+	}
+	if strings.Contains(ir.Content.Type, "application/x-www-form-urlencoded") {
+		ir.Content.Body, err = readFormToJSON(r)
 	} else {
-		ir.Body, err = io.ReadAll(r.Body)
+		ir.Content.Body, err = io.ReadAll(r.Body)
+	}
+	requestId := r.Context().Value(KeyRequestId)
+	if requestId == nil {
+		ir.Meta.ID = 0
+	} else {
+		ir.Meta.ID = requestId.(uint64)
 	}
 	return ir, err
 }
@@ -102,17 +114,14 @@ func (a *Adapter) buildRouter() http.Handler {
 }
 
 func (a *Adapter) ForwardHook(w http.ResponseWriter, r *http.Request) {
-	requestId := r.Context().Value(KeyRequestId)
-	name := chi.URLParam(r, "name")
-
 	ir, err := newIncomeRequest(r)
 	if err != nil {
-		a.log.Errorf("request id=%d has bad data: %v", requestId, err)
+		a.log.Errorf("request id=%d has bad data: %v", ir.Meta.ID, err)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	if err = a.hs.Forward(r.Context(), name, ir.Body); err != nil {
-		a.log.Errorf("request id=%d failed %v", requestId, err)
+	if err = a.hs.Forward(r.Context(), ir); err != nil {
+		a.log.Errorf("request id=%d failed %v", ir.Meta.ID, err)
 		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}

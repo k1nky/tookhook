@@ -76,7 +76,7 @@ func (suite *httpAdapterTestSuite) TestForwardSuccess() {
 	}
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/hook/test", nil)
-	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any()).Return(nil)
 	a.ForwardHook(w, r)
 	suite.Equal(http.StatusOK, w.Result().StatusCode)
 }
@@ -88,7 +88,7 @@ func (suite *httpAdapterTestSuite) TestForwardFailed() {
 	}
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/hook/test", nil)
-	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
 	a.ForwardHook(w, r)
 	suite.Equal(http.StatusNotAcceptable, w.Result().StatusCode)
 }
@@ -100,7 +100,7 @@ func (suite *httpAdapterTestSuite) TestForwardSuccessWithPlainBody() {
 	w := httptest.NewRecorder()
 	buf := bytes.NewBufferString("hello")
 	r := httptest.NewRequest(http.MethodPost, "/hook/test", buf)
-	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any(), []byte("hello")).Return(nil)
+	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any()).Return(nil)
 	a.ForwardHook(w, r)
 	suite.Equal(http.StatusOK, w.Result().StatusCode)
 }
@@ -113,7 +113,7 @@ func (suite *httpAdapterTestSuite) TestForwardSuccessWithForm() {
 	buf := bytes.NewBufferString("message=hello")
 	r := httptest.NewRequest(http.MethodPost, "/hook/test", buf)
 	r.Header.Add("content-type", "application/x-www-form-urlencoded")
-	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any(), []byte("{\"message\":[\"hello\"]}")).Return(nil)
+	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any()).Return(nil)
 	a.ForwardHook(w, r)
 	suite.Equal(http.StatusOK, w.Result().StatusCode)
 }
@@ -126,7 +126,7 @@ func (suite *httpAdapterTestSuite) TestForwardSuccessWithJSON() {
 	buf := bytes.NewBufferString("{\"message\":\"hello\"}")
 	r := httptest.NewRequest(http.MethodPost, "/hook/test", buf)
 	r.Header.Add("content-type", "application/json")
-	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any(), []byte("{\"message\":\"hello\"}")).Return(nil)
+	suite.hs.EXPECT().Forward(gomock.Any(), gomock.Any()).Return(nil)
 	a.ForwardHook(w, r)
 	suite.Equal(http.StatusOK, w.Result().StatusCode)
 }

@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	entity "github.com/k1nky/tookhook/internal/entity"
+	hooks "github.com/k1nky/tookhook/internal/entity/hooks"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -115,17 +116,17 @@ func (m *MockhookService) EXPECT() *MockhookServiceMockRecorder {
 }
 
 // Forward mocks base method.
-func (m *MockhookService) Forward(ctx context.Context, name string, data []byte) error {
+func (m *MockhookService) Forward(ctx context.Context, r *hooks.HookRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Forward", ctx, name, data)
+	ret := m.ctrl.Call(m, "Forward", ctx, r)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Forward indicates an expected call of Forward.
-func (mr *MockhookServiceMockRecorder) Forward(ctx, name, data any) *gomock.Call {
+func (mr *MockhookServiceMockRecorder) Forward(ctx, r any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockhookService)(nil).Forward), ctx, name, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Forward", reflect.TypeOf((*MockhookService)(nil).Forward), ctx, r)
 }
 
 // MockrulesService is a mock of rulesService interface.

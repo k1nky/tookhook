@@ -4,6 +4,7 @@ package tasks
 
 import (
 	json "encoding/json"
+	hooks "github.com/k1nky/tookhook/internal/entity/hooks"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
@@ -94,4 +95,228 @@ func (v *QueueTask) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *QueueTask) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks(l, v)
+}
+func easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks1(in *jlexer.Lexer, out *HookTask) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Hook":
+			easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityHooks(in, &out.Hook)
+		case "Data":
+			if in.IsNull() {
+				in.Skip()
+				out.Data = nil
+			} else {
+				out.Data = in.Bytes()
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks1(out *jwriter.Writer, in HookTask) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Hook\":"
+		out.RawString(prefix[1:])
+		easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityHooks(out, in.Hook)
+	}
+	{
+		const prefix string = ",\"Data\":"
+		out.RawString(prefix)
+		out.Base64Bytes(in.Data)
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v HookTask) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v HookTask) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *HookTask) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *HookTask) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks1(l, v)
+}
+func easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityHooks(in *jlexer.Lexer, out *hooks.HookRequestMeta) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "ID":
+			out.ID = uint64(in.Uint64())
+		case "Name":
+			out.Name = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityHooks(out *jwriter.Writer, in hooks.HookRequestMeta) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"ID\":"
+		out.RawString(prefix[1:])
+		out.Uint64(uint64(in.ID))
+	}
+	{
+		const prefix string = ",\"Name\":"
+		out.RawString(prefix)
+		out.String(string(in.Name))
+	}
+	out.RawByte('}')
+}
+func easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks2(in *jlexer.Lexer, out *ForwardTask) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "Name":
+			out.Name = string(in.String())
+		case "Hook":
+			easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityHooks(in, &out.Hook)
+		case "Options":
+			if in.IsNull() {
+				in.Skip()
+				out.Options = nil
+			} else {
+				out.Options = in.Bytes()
+			}
+		case "Content":
+			if in.IsNull() {
+				in.Skip()
+				out.Content = nil
+			} else {
+				out.Content = in.Bytes()
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks2(out *jwriter.Writer, in ForwardTask) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	{
+		const prefix string = ",\"Name\":"
+		out.RawString(prefix[1:])
+		out.String(string(in.Name))
+	}
+	{
+		const prefix string = ",\"Hook\":"
+		out.RawString(prefix)
+		easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityHooks(out, in.Hook)
+	}
+	{
+		const prefix string = ",\"Options\":"
+		out.RawString(prefix)
+		out.Base64Bytes(in.Options)
+	}
+	{
+		const prefix string = ",\"Content\":"
+		out.RawString(prefix)
+		out.Base64Bytes(in.Content)
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ForwardTask) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks2(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ForwardTask) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson79a0a577EncodeGithubComK1nkyTookhookInternalEntityTasks2(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ForwardTask) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks2(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ForwardTask) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson79a0a577DecodeGithubComK1nkyTookhookInternalEntityTasks2(l, v)
 }
