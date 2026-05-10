@@ -6,9 +6,10 @@ import (
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
 	"github.com/k1nky/tookhook/pkg/plugin"
 	"github.com/k1nky/tookhook/pkg/thstrings"
-	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 )
 
 type handler struct {
@@ -24,7 +25,7 @@ type Handler struct {
 	Options map[string]interface{} `yaml:"options"`
 	// On contains a regular expression string. The data will be passed to the receiver
 	// if the regexp matches.
-	On restrings.String `yaml:"on"`
+	On tstrings.String `yaml:"on"`
 	// List of transformations that will be executed before being passed to the plugin.
 	// The first one that matches the condition `On` is applied.
 	PreActions Actions `yaml:"pre"`
@@ -41,11 +42,11 @@ func (h Handler) AsPluginHandler() plugin.Handler {
 
 // Content applies transformations and returns processed data.
 // The handler must be pre-compiled by `Compile`.
-func (h Handler) Content(data []byte) ([]byte, error) {
+func (h Handler) Execute(r *hooks.Hook) ([]byte, error) {
 	if len(h.PreActions) == 0 {
-		return data, nil
+		return r.RawBody, nil
 	}
-	return h.PreActions.Execute(data)
+	return h.PreActions.Execute(r)
 }
 
 // Compile validates the handler definition and compiles it.
@@ -72,9 +73,4 @@ func (h *Handler) Compile() (err error) {
 		return err
 	}
 	return nil
-}
-
-// Match returns true if the handler should be called on the data.
-func (h Handler) Match(data []byte) bool {
-	return h.On.Match(data)
 }

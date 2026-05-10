@@ -25,10 +25,10 @@ func New(pm pluginmanager, store storage, log logger) *Service {
 }
 
 // GetIncomeHookByName returns income hook definition by name.
-func (svc *Service) GetIncomeHookByName(ctx context.Context, name string) *rules.Hook {
-	hook := rules.Hook{}
-	for _, v := range svc.rules.Hooks {
-		if v.Income == name {
+func (svc *Service) GetIncomeHookByName(ctx context.Context, name string) *rules.Endpoint {
+	hook := rules.Endpoint{}
+	for _, v := range svc.rules.Endpoints {
+		if v.Name == name {
 			hook = v
 			return &hook
 		}
@@ -59,14 +59,14 @@ func (svc *Service) Validate(ctx context.Context, rules *rules.Rules) error {
 	if err := rules.Compile(); err != nil {
 		return err
 	}
-	for _, hook := range rules.Hooks {
+	for _, hook := range rules.Endpoints {
 		for _, v := range hook.Handlers {
 			p := svc.pm.Get(v.Type)
 			if p == nil {
 				continue
 			}
 			if err := p.Validate(ctx, v.AsPluginHandler()); err != nil {
-				return fmt.Errorf("validate %s[handler=%s]: %w", hook.Income, v.Type, err)
+				return fmt.Errorf("validate %s[handler=%s]: %w", hook.Name, v.Type, err)
 			}
 		}
 	}

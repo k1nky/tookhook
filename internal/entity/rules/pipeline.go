@@ -1,19 +1,21 @@
-package transform
+package rules
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
 	"github.com/k1nky/tookhook/pkg/httpclient"
-	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
 	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 )
 
-type Transformer interface {
+type Executer interface {
 	Compile() (err error)
-	Execute(data []byte) ([]byte, error)
+	Execute(data any) ([]byte, error)
 }
 
 type StageType string
@@ -22,6 +24,7 @@ const (
 	StageTypeDefault  StageType = ""
 	StageTypeTemplate StageType = "template"
 	StageTypeHTTP     StageType = "http"
+	StageTypeDiscard  StageType = "discard"
 )
 
 func NewStageType(s string) StageType {
@@ -29,10 +32,10 @@ func NewStageType(s string) StageType {
 }
 
 type Stage struct {
-	Type              StageType        `yaml:"type"`
-	On                restrings.String `yaml:"on"`
-	TemplateTransform *TemplateStage   `yaml:"template,omitempty"`
-	HTTPTransform     *HTTPStage       `yaml:"http,omitempty"`
+	Type              StageType       `yaml:"type"`
+	On                tstrings.String `yaml:"on"`
+	TemplateTransform *TemplateStage  `yaml:"template,omitempty"`
+	HTTPTransform     *HTTPStage      `yaml:"http,omitempty"`
 }
 
 type Pipeline []*Stage
@@ -46,12 +49,16 @@ type HTTPStage struct {
 	TimeoutInSec uint            `yaml:"timeout"`
 }
 
-func (ts Stage) GetTransformer() Transformer {
+type DiscardStage struct{}
+
+func (ts Stage) GetTransformer() Executer {
 	switch ts.Type {
 	case StageTypeTemplate:
 		return ts.TemplateTransform
 	case StageTypeHTTP:
 		return ts.HTTPTransform
+	case StageTypeDiscard:
+		return &DiscardStage{}
 	}
 	return nil
 }
@@ -67,8 +74,16 @@ func (s *Stage) Compile() (err error) {
 	return
 }
 
-func (s *Stage) Execute(data []byte) ([]byte, error) {
+func (s *Stage) Execute(data any) ([]byte, error) {
 	return s.GetTransformer().Execute(data)
+}
+
+func (s *DiscardStage) Compile() error {
+	return nil
+}
+
+func (s *DiscardStage) Execute(data any) ([]byte, error) {
+	return nil, fmt.Errorf("transform: %w", entity.ErrDiscard)
 }
 
 func (ht *HTTPStage) Compile() (err error) {
@@ -76,7 +91,7 @@ func (ht *HTTPStage) Compile() (err error) {
 	return
 }
 
-func (ht *HTTPStage) Execute(data []byte) ([]byte, error) {
+func (ht *HTTPStage) Execute(data any) ([]byte, error) {
 	uri, err := ht.URL.Execute(data)
 	if err != nil {
 		return nil, err
@@ -98,12 +113,20 @@ func (tp Pipeline) Compile() error {
 	return nil
 }
 
-func (tp Pipeline) Execute(data []byte) (transformed []byte, err error) {
-	transformed = data
+func (tp Pipeline) Execute(r *hooks.Hook) (transformed []byte, err error) {
+	ps := &PipelineState{
+		Hook: r,
+		Data: r.RawBody,
+	}
 	for _, v := range tp {
-		if transformed, err = v.Execute(transformed); err != nil {
+		if ps.Data, err = v.Execute(ps); err != nil {
 			return nil, err
 		}
 	}
-	return
+	return ps.Data, nil
+}
+
+type PipelineState struct {
+	*hooks.Hook
+	Data []byte
 }

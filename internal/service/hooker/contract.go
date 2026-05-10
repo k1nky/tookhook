@@ -10,7 +10,7 @@ import (
 
 //go:generate mockgen -source=contract.go -destination=mock/hooker.go -package=mock rulesStore
 type rulesStore interface {
-	GetIncomeHookByName(ctx context.Context, name string) *rules.Hook
+	GetIncomeHookByName(ctx context.Context, name string) *rules.Endpoint
 }
 
 type logger interface {

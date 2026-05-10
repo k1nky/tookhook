@@ -2,9 +2,7 @@ package hooker
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
 	"github.com/k1nky/tookhook/internal/entity/hooks"
@@ -28,64 +26,38 @@ func New(rs rulesStore, pm pluginmanager, log logger, tq taskqueue) *Service {
 	}
 }
 
-func (svc *Service) Forward(ctx context.Context, r *hooks.HookRequest) error {
-	rule := svc.rs.GetIncomeHookByName(ctx, r.Meta.Name)
-	if rule == nil {
-		return fmt.Errorf("hook %s: %w", r.Meta, entity.ErrNotFound)
-	}
-	if rule.Disabled {
-		svc.log.Debugf("hook %s skipped", rule.Income)
-		return nil
-	}
-	// TODO: verify income request?
-	t := tasks.HookTask{
-		Hook: r.Meta,
-		Data: r.Content.Body,
-	}
-	payload, err := t.Payload()
-	if err != nil {
-		svc.log.Errorf("marshaling payload to %s failed: %v", r.Meta, err)
-		return err
-	}
-	if err := svc.tq.Enqueue(ctx, &tasks.QueueTask{
-		Queue:   tasks.HookQueueName,
-		Payload: payload,
-	}); err != nil {
-		svc.log.Errorf("enqueue failed: %v", err)
-		return err
-	}
-	return nil
-}
-
-func (svc *Service) processHook(ctx context.Context, t *tasks.HookTask) error {
-	hook := svc.rs.GetIncomeHookByName(ctx, t.Hook.Name)
+func (svc *Service) processHook(ctx context.Context, r *hooks.Hook) error {
+	hook := svc.rs.GetIncomeHookByName(ctx, r.Meta.Name)
 	if hook == nil || hook.Disabled {
-		svc.log.Debugf("hook %s skipped: not found or disabled", t.Hook)
+		svc.log.Debugf("hook %s skipped: not found or disabled", r.Meta)
 		return nil
 	}
 	for _, h := range hook.Handlers {
 		if h.Disabled {
-			svc.log.Debugf("handler %s %s skipped", t.Hook, h.Type)
+			svc.log.Debugf("handler %s %s skipped", r.Meta, h.Type)
 			continue
 		}
-		if !h.Match(t.Data) {
-			svc.log.Debugf("handler %s %s skipped", t.Hook, h.Type)
+		if matched, err := h.On.Match(r); !matched {
+			svc.log.Debugf("handler %s %s skipped", r.Meta, h.Type)
+			continue
+		} else if err != nil {
+			svc.log.Errorf("handler %s %s skipped due to: %s", r.Meta, h.Type, err)
 			continue
 		}
-		content, err := h.Content(t.Data)
+		content, err := h.Execute(r)
 		if err != nil {
 			if errors.Is(err, entity.ErrDiscard) {
-				svc.log.Debugf("handler %s %s discarded", t.Hook, h.Type)
+				svc.log.Debugf("handler %s %s discarded", r.Meta, h.Type)
 				continue
 			}
 			if !errors.Is(err, entity.ErrNotMatch) {
-				svc.log.Errorf("handler %s %s: %v", t.Hook, h.Type, err)
+				svc.log.Errorf("handler %s %s: %v", r.Meta, h.Type, err)
 				continue
 			}
 		}
 		t := &tasks.ForwardTask{
 			Name:    h.Type,
-			Hook:    t.Hook,
+			Hook:    r.Meta,
 			Options: h.AsPluginHandler().Options,
 			Content: content,
 		}
@@ -119,28 +91,6 @@ func (svc *Service) processForward(ctx context.Context, t *tasks.ForwardTask) er
 		}
 	} else {
 		svc.log.Errorf("plugin %s not found", t.Name)
-	}
-	return nil
-}
-
-func (svc *Service) processQueueTask(ctx context.Context, qt tasks.QueueTask) error {
-	switch qt.Queue {
-	case tasks.HookQueueName:
-		t := tasks.HookTask{}
-		if err := json.Unmarshal(qt.Payload, &t); err != nil {
-			return fmt.Errorf("%v: %w", err, entity.ErrSkipRetry)
-		}
-		if err := svc.processHook(ctx, &t); err != nil {
-			return fmt.Errorf("%v: %w", err, entity.ErrSkipRetry)
-		}
-	case tasks.ForwardQueueName:
-		t := tasks.ForwardTask{}
-		if err := json.Unmarshal(qt.Payload, &t); err != nil {
-			return fmt.Errorf("%v: %w", err, entity.ErrSkipRetry)
-		}
-		if err := svc.processForward(ctx, &t); err != nil {
-			return err
-		}
 	}
 	return nil
 }

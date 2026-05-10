@@ -49,14 +49,14 @@ func (suite *fileStoreTestSuite) TestGetRulesEmpty() {
 	suite.write("")
 	rules, err := suite.fs.GetRules(ctx)
 	suite.NoError(err)
-	suite.Len(rules.Hooks, 0)
+	suite.Len(rules.Endpoints, 0)
 }
 
 func (suite *fileStoreTestSuite) TestReadRulesInvalidYaml() {
 	ctx := context.TODO()
 	suite.write(`
 		templates:
-		hooks
+		endpoints
 	`)
 	rules, err := suite.fs.GetRules(ctx)
 	suite.Error(err)

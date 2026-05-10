@@ -47,23 +47,26 @@ func readFormToJSON(r *http.Request) (data []byte, err error) {
 	return
 }
 
-func newIncomeRequest(r *http.Request) (*hooks.HookRequest, error) {
+func newIncomeRequest(r *http.Request) (*hooks.Hook, error) {
 	var (
 		err error
 	)
-	ir := &hooks.HookRequest{
-		Meta: hooks.HookRequestMeta{
+	ir := &hooks.Hook{
+		Meta: hooks.Meta{
 			Name: chi.URLParam(r, "name"),
 		},
-		Content: hooks.HookRequestBody{
-			Type: r.Header.Get("content-type"),
-		},
+		Encoding: hooks.ContentText,
 	}
-	if strings.Contains(ir.Content.Type, "application/x-www-form-urlencoded") {
-		ir.Content.Body, err = readFormToJSON(r)
+	if strings.Contains(r.Header.Get("content-type"), "application/x-www-form-urlencoded") {
+		ir.Encoding = hooks.ContentJSON
+		ir.RawBody, err = readFormToJSON(r)
 	} else {
-		ir.Content.Body, err = io.ReadAll(r.Body)
+		if strings.Contains(r.Header.Get("content-type"), "application/json") {
+			ir.Encoding = hooks.ContentJSON
+		}
+		ir.RawBody, err = io.ReadAll(r.Body)
 	}
+
 	requestId := r.Context().Value(KeyRequestId)
 	if requestId == nil {
 		ir.Meta.ID = 0

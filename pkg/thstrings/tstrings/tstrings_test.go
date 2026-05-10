@@ -117,18 +117,39 @@ func TestString_UnmarshalYAML(t *testing.T) {
 	assert.Equal(t, String{Template: "abc"}, s)
 }
 
-func TestBuiltin(t *testing.T) {
+func TestString_BuiltinFuncs(t *testing.T) {
 	tests := []struct {
 		name       string
 		s          *String
-		data       []byte
+		data       any
 		wantError  error
 		wantResult string
 	}{
 		{
+			name:       "title",
+			s:          New(`Hello {{ . | title }}`),
+			data:       `andrew`,
+			wantError:  nil,
+			wantResult: "Hello Andrew",
+		},
+		{
 			name:       "reFindAll",
 			s:          New(`{{ $a := (. | reFindAll "name\":\\s*\"([^\"]+)") }}Hello {{ index $a 1 }}`),
-			data:       []byte(`"name": "Name", "data": "My Data"`),
+			data:       `"name": "Name", "data": "My Data"`,
+			wantError:  nil,
+			wantResult: "Hello Name",
+		},
+		{
+			name:       "json__1",
+			s:          New(`{{ $a := (. | json) }}Hello {{ $a.name | title }}`),
+			data:       `{"name": "name", "data": "My Data"}`,
+			wantError:  nil,
+			wantResult: "Hello Name",
+		},
+		{
+			name:       "json__2",
+			s:          New(`Hello {{ (. | json).name }}`),
+			data:       `{"name": "Name", "data": "My Data"}`,
 			wantError:  nil,
 			wantResult: "Hello Name",
 		},
@@ -138,7 +159,7 @@ func TestBuiltin(t *testing.T) {
 		assert.NoError(t, err)
 		result, err := tt.s.Execute(tt.data)
 		print(string(result))
-		assert.ErrorIs(t, err, tt.wantError)
-		assert.Equal(t, tt.wantResult, string(result))
+		assert.ErrorIs(t, err, tt.wantError, tt.name)
+		assert.Equal(t, tt.wantResult, string(result), tt.name)
 	}
 }

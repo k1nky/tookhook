@@ -12,7 +12,7 @@ import (
 	"github.com/k1nky/tookhook/internal/service/hooker/mock"
 	log "github.com/k1nky/tookhook/pkg/logger"
 	pluginmock "github.com/k1nky/tookhook/pkg/plugin/mock"
-	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
 )
@@ -39,19 +39,19 @@ func (suite *serviceHookerSuite) SetupTest() {
 
 func (suite *serviceHookerSuite) TestForward_NotFound() {
 	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(nil)
-	err := suite.svc.Forward(context.TODO(), &hooks.HookRequest{
-		Meta: hooks.HookRequestMeta{Name: "test"},
+	err := suite.svc.Forward(context.TODO(), &hooks.Hook{
+		Meta: hooks.Meta{Name: "test"},
 	})
 	suite.ErrorIs(err, entity.ErrNotFound)
 }
 
 func (suite *serviceHookerSuite) TestForward_RuleDisabled() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income:   "test",
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name:     "test",
 		Disabled: true,
 	})
-	err := suite.svc.Forward(context.TODO(), &hooks.HookRequest{
-		Meta: hooks.HookRequestMeta{Name: "test"},
+	err := suite.svc.Forward(context.TODO(), &hooks.Hook{
+		Meta: hooks.Meta{Name: "test"},
 	})
 	suite.NoError(err)
 }
@@ -71,23 +71,24 @@ func (suite *serviceHookerSuite) TestForward_Success() {
 	suite.NoError(err)
 }
 
-func (suite *serviceHookerSuite) TestForward_EnququeFailed() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income: "test",
+func (suite *serviceHookerSuite) TestForward_EnqueueFailed() {
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name: "test",
 		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
 			},
 		},
 	})
-	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(errors.New("enquque failed"))
-	err := suite.svc.processHook(context.TODO(), &tasks.HookTask{})
+
+	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(errors.New("enque failed"))
+	err := suite.svc.processHook(context.TODO(), &hooks.Hook{})
 	suite.NoError(err)
 }
 
 func (suite *serviceHookerSuite) TestForward_MultipleHandlers() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income: "test",
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name: "test",
 		Handlers: []*rules.Handler{
 			{
 				Type: "plugin1",
@@ -98,13 +99,13 @@ func (suite *serviceHookerSuite) TestForward_MultipleHandlers() {
 		},
 	})
 	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil).Times(2)
-	err := suite.svc.processHook(context.TODO(), &tasks.HookTask{})
+	err := suite.svc.processHook(context.TODO(), &hooks.Hook{})
 	suite.NoError(err)
 }
 
 func (suite *serviceHookerSuite) TestForward_MultipleHandlersDisabled() {
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income: "test",
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name: "test",
 		Handlers: []*rules.Handler{
 			{
 				Type:     "plugin1",
@@ -116,22 +117,22 @@ func (suite *serviceHookerSuite) TestForward_MultipleHandlersDisabled() {
 		},
 	})
 	suite.tq.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-	err := suite.svc.processHook(context.TODO(), &tasks.HookTask{})
+	err := suite.svc.processHook(context.TODO(), &hooks.Hook{})
 	suite.NoError(err)
 }
 
 func (suite *serviceHookerSuite) TestForward_HandlerNotMatch() {
 	h := &rules.Handler{
 		Type: "plugin1",
-		On:   *restrings.New("123"),
+		On:   *tstrings.New("123"),
 	}
 	h.Compile()
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income:   "test",
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name:     "test",
 		Handlers: []*rules.Handler{h},
 	})
-	err := suite.svc.processHook(context.TODO(), &tasks.HookTask{
-		Data: []byte("abc"),
+	err := suite.svc.processHook(context.TODO(), &hooks.Hook{
+		RawBody: []byte("abc"),
 	})
 	suite.NoError(err)
 }
@@ -146,12 +147,12 @@ func (suite *serviceHookerSuite) TestForward_Discard() {
 		},
 	}
 	h.Compile()
-	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Hook{
-		Income:   "test",
+	suite.store.EXPECT().GetIncomeHookByName(gomock.Any(), gomock.Any()).Return(&rules.Endpoint{
+		Name:     "test",
 		Handlers: []*rules.Handler{h},
 	})
-	err := suite.svc.processHook(context.TODO(), &tasks.HookTask{
-		Data: []byte("abc"),
+	err := suite.svc.processHook(context.TODO(), &hooks.Hook{
+		RawBody: []byte("abc"),
 	})
 	suite.NoError(err)
 }

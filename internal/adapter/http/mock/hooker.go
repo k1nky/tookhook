@@ -118,7 +118,7 @@ func (m *MockhookService) EXPECT() *MockhookServiceMockRecorder {
 }
 
 // Forward mocks base method.
-func (m *MockhookService) Forward(ctx context.Context, r *hooks.HookRequest) error {
+func (m *MockhookService) Forward(ctx context.Context, r *hooks.Hook) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Forward", ctx, r)
 	ret0, _ := ret[0].(error)

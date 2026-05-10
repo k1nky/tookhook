@@ -5,34 +5,21 @@ import (
 	"fmt"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	"github.com/k1nky/tookhook/internal/entity/pipeline/transform"
-	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
-)
-
-type ActionType = string
-
-const (
-	ActionTypeTransform ActionType = "transform"
-	ActionTypeDiscard   ActionType = "discard"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 )
 
 type Action struct {
-	Type       ActionType         `yaml:"type"`
-	Transforms transform.Pipeline `yaml:"transforms"`
-	// On is a regexp, transformation will be applied if the regexp is matched.
-	On restrings.String `yaml:"on"`
+	Pipeline Pipeline `yaml:"pipeline"`
+	// On is a regexp, action will be applied if the regexp is matched.
+	On tstrings.String `yaml:"on"`
 }
 
 type Actions []*Action
 
 func (a *Action) Compile() (err error) {
-	if a.Type == "" {
-		a.Type = ActionTypeTransform
-	}
-	if a.Type == ActionTypeTransform {
-		if err = a.Transforms.Compile(); err != nil {
-			return err
-		}
+	if err = a.Pipeline.Compile(); err != nil {
+		return err
 	}
 	if err = a.On.Compile(); err != nil {
 		return err
@@ -40,14 +27,11 @@ func (a *Action) Compile() (err error) {
 	return nil
 }
 
-func (a Action) Execute(data []byte) ([]byte, error) {
-	if ok := a.On.Match(data); !ok {
-		return data, fmt.Errorf("transform: %w", entity.ErrNotMatch)
+func (a Action) Execute(r *hooks.Hook) ([]byte, error) {
+	if ok, err := a.On.Match(r); !ok || err != nil {
+		return r.RawBody, fmt.Errorf("transform: %s: %w", err, entity.ErrNotMatch)
 	}
-	if a.Type == ActionTypeDiscard {
-		return nil, fmt.Errorf("transform: %w", entity.ErrDiscard)
-	}
-	return a.Transforms.Execute(data)
+	return a.Pipeline.Execute(r)
 }
 
 func (t Actions) Compile() error {
@@ -59,10 +43,10 @@ func (t Actions) Compile() error {
 	return nil
 }
 
-func (a Actions) Execute(data []byte) (transformed []byte, err error) {
-	transformed = data
-	for _, t := range a {
-		transformed, err = t.Execute(data)
+func (a Actions) Execute(r *hooks.Hook) (transformed []byte, err error) {
+	transformed = r.RawBody
+	for _, action := range a {
+		transformed, err = action.Execute(r)
 		if errors.Is(err, entity.ErrNotMatch) {
 			continue
 		}

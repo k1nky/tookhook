@@ -21,14 +21,34 @@ type String struct {
 
 func bultinFuncs() template.FuncMap {
 	return template.FuncMap{
-		"title":     cases.Title(language.Und).String,
+		"title": func(s string) string {
+			return cases.Title(language.Und).String(s)
+		},
 		"toUpper":   strings.ToUpper,
 		"toLower":   strings.ToLower,
 		"trimSpace": strings.TrimSpace,
 		"join": func(sep string, s []string) string {
 			return strings.Join(s, sep)
 		},
+		"json": func(s string) any {
+			var d any
+			d = map[string]interface{}{}
+			if err := json.Unmarshal([]byte(s), &d); err == nil {
+				return d
+			}
+			d = []interface{}{}
+			if err := json.Unmarshal([]byte(s), &d); err == nil {
+				return d
+			}
+			return s
+		},
 		"match": regexp.MatchString,
+		"ifMatch": func(pattern string, s string) string {
+			if matched, err := regexp.MatchString(pattern, s); matched && err != nil {
+				return s
+			}
+			return ""
+		},
 		"reReplaceAll": func(pattern, repl, text string) string {
 			re := regexp.MustCompile(pattern)
 			return re.ReplaceAllString(text, repl)
@@ -36,7 +56,7 @@ func bultinFuncs() template.FuncMap {
 
 		"reFindAll": func(pattern string, text string) []string {
 			re := regexp.MustCompile(pattern)
-			found := re.FindAllStringSubmatch(text, -1)
+			found := re.FindAllStringSubmatch(string(text), -1)
 			if len(found) == 0 {
 				return nil
 			}
@@ -82,29 +102,12 @@ func (ts *String) Compile() (err error) {
 	return nil
 }
 
-// TODO: remove error
-func (ts *String) unmarshalData(data []byte) (any, error) {
-	var (
-		d any = data
-	)
-	d = map[string]interface{}{}
-	if err := json.Unmarshal(data, &d); err == nil {
-		return d, nil
-	}
-	d = []interface{}{}
-	if err := json.Unmarshal(data, &d); err == nil {
-		return d, nil
-	}
-	return string(data), nil
-}
-
-func (ts *String) Execute(data []byte) ([]byte, error) {
+func (ts *String) Execute(data any) ([]byte, error) {
 	if ts.template == nil {
-		return data, nil
+		return nil, thstrings.ErrEmptyTemplate
 	}
-	d, _ := ts.unmarshalData(data)
 	buf := bytes.NewBuffer(nil)
-	if err := ts.template.Execute(buf, d); err != nil {
+	if err := ts.template.Execute(buf, data); err != nil {
 		return nil, fmt.Errorf("execute: %w %w", err, thstrings.ErrFailedExecution)
 	}
 	return buf.Bytes(), nil
@@ -113,4 +116,12 @@ func (ts *String) Execute(data []byte) ([]byte, error) {
 
 func (s *String) IsEmpty() bool {
 	return s.Template == ""
+}
+
+func (ts *String) Match(data any) (bool, error) {
+	if ts.template == nil {
+		return true, nil
+	}
+	result, err := ts.Execute(data)
+	return len(result) > 0, err
 }

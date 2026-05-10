@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/k1nky/tookhook/internal/entity/rules"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type FileStore struct {

@@ -1,0 +1,101 @@
+package rules
+
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/k1nky/tookhook/internal/entity/hooks"
+	"github.com/k1nky/tookhook/internal/entity/pipeline"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestHandler_Execute(t *testing.T) {
+	tests := []struct {
+		name     string
+		hook     hooks.Hook
+		h        Handler
+		expected []byte
+	}{
+		{
+			name: "without pipeline",
+			hook: hooks.Hook{
+				RawBody: []byte(`some data`),
+			},
+			h:        Handler{},
+			expected: []byte(`some data`),
+		},
+		{
+			name: "with pipeline",
+			hook: hooks.Hook{
+				RawBody: []byte(`{"data": 123}`),
+			},
+			h: Handler{
+				PreActions: Actions{
+					&Action{
+						Pipeline: pipeline.Pipeline{
+							&pipeline.Stage{
+								Type:              pipeline.StageTypeTemplate,
+								TemplateTransform: &pipeline.TemplateStage{String: *tstrings.New(`{{ .Body.data }}`)},
+							},
+						},
+					},
+				},
+			},
+			expected: []byte("123"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.h.PreActions.Compile()
+			assert.NoError(t, err)
+
+			got, err := tt.h.Execute(&tt.hook)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, got)
+		})
+	}
+}
+
+func TestHandlerCompileWithType(t *testing.T) {
+	h := &Handler{
+		Type: "handler1",
+	}
+	err := h.Compile()
+	assert.NoError(t, err)
+	assert.NotNil(t, h.On)
+	assert.NotNil(t, h.options)
+}
+
+func TestHandlerCompileBadTypeValue(t *testing.T) {
+	h := &Handler{
+		Type: "",
+	}
+	err := h.Compile()
+	assert.Error(t, err)
+}
+
+func TestHandlerCompileBadOnValue(t *testing.T) {
+	h := &Handler{
+		Type: "handler1",
+		On:   *tstrings.New("{{ abc"),
+	}
+	err := h.Compile()
+	assert.Error(t, err)
+}
+
+func TestHandlerCompileWithOptions(t *testing.T) {
+	h := &Handler{
+		Type: "handler1",
+		Options: map[string]interface{}{
+			"option1": "value1",
+		},
+	}
+	err := h.Compile()
+	assert.NoError(t, err)
+	assert.NotNil(t, h.options)
+	options := make(map[string]interface{})
+	err = json.Unmarshal(h.options, &options)
+	assert.NoError(t, err)
+}

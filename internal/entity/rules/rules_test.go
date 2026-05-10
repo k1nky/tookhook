@@ -4,12 +4,10 @@ import (
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/entity"
-	"github.com/k1nky/tookhook/internal/entity/pipeline/transform"
-	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRulesValidateFailed(t *testing.T) {
+func TestRules_Compile_Failed(t *testing.T) {
 	tests := []struct {
 		name  string
 		rules Rules
@@ -18,9 +16,9 @@ func TestRulesValidateFailed(t *testing.T) {
 		{
 			name: "EmptyIncome",
 			rules: Rules{
-				Hooks: []Hook{
+				Endpoints: []Endpoint{
 					{
-						Income:   "",
+						Name:     "",
 						Handlers: []*Handler{{Type: "~log"}},
 					},
 				},
@@ -30,9 +28,9 @@ func TestRulesValidateFailed(t *testing.T) {
 		{
 			name: "EmptyOutcome",
 			rules: Rules{
-				Hooks: []Hook{
+				Endpoints: []Endpoint{
 					{
-						Income:   "test",
+						Name:     "test",
 						Handlers: []*Handler{{Type: ""}},
 					},
 				},
@@ -48,7 +46,7 @@ func TestRulesValidateFailed(t *testing.T) {
 	}
 }
 
-func TestRulesValidateNoError(t *testing.T) {
+func TestRules_Compile_NoError(t *testing.T) {
 	tests := []struct {
 		name  string
 		rules Rules
@@ -56,9 +54,9 @@ func TestRulesValidateNoError(t *testing.T) {
 		{
 			name: "NoError",
 			rules: Rules{
-				Hooks: []Hook{
+				Endpoints: []Endpoint{
 					{
-						Income:   "test",
+						Name:     "test",
 						Handlers: []*Handler{{Type: "log"}},
 					},
 				},
@@ -71,33 +69,4 @@ func TestRulesValidateNoError(t *testing.T) {
 			assert.NoError(t, got)
 		})
 	}
-}
-
-func TestHandlerContentWithTemplate(t *testing.T) {
-	h := Handler{
-		Type: "handler1",
-		PreActions: Actions{
-			&Action{
-				Transforms: transform.Pipeline{
-					&transform.Stage{
-						Type:              transform.StageTypeTemplate,
-						TemplateTransform: &transform.TemplateStage{String: *tstrings.New("{{ .message }}")},
-					},
-				},
-			},
-		},
-	}
-	h.Compile()
-	data := []byte(`{"message": "Message", "text": "Text"}`)
-	content, err := h.Content(data)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("Message"), content)
-}
-
-func TestHandlerContentWithoutTemplate(t *testing.T) {
-	h := Handler{}
-	data := []byte(`My Message`)
-	content, err := h.Content(data)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("My Message"), content)
 }

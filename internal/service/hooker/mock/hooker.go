@@ -44,10 +44,10 @@ func (m *MockrulesStore) EXPECT() *MockrulesStoreMockRecorder {
 }
 
 // GetIncomeHookByName mocks base method.
-func (m *MockrulesStore) GetIncomeHookByName(ctx context.Context, name string) *rules.Hook {
+func (m *MockrulesStore) GetIncomeHookByName(ctx context.Context, name string) *rules.Endpoint {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIncomeHookByName", ctx, name)
-	ret0, _ := ret[0].(*rules.Hook)
+	ret0, _ := ret[0].(*rules.Endpoint)
 	return ret0
 }
 

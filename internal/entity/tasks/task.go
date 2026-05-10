@@ -24,24 +24,13 @@ type QueueTask struct {
 //easyjson:json
 type ForwardTask struct {
 	Name    string
-	Hook    hooks.HookRequestMeta
+	Hook    hooks.Meta
 	Options []byte
 	Content []byte
-}
-
-//go:generate easyjson task.go
-//easyjson:json
-type HookTask struct {
-	Hook hooks.HookRequestMeta
-	Data []byte
 }
 
 type TaskHandlerFunc func(context.Context, QueueTask) error
 
 func (ftp *ForwardTask) Payload() ([]byte, error) {
 	return json.Marshal(ftp)
-}
-
-func (t *HookTask) Payload() ([]byte, error) {
-	return json.Marshal(t)
 }

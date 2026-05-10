@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"github.com/k1nky/tookhook/internal/entity"
+	"github.com/k1nky/tookhook/internal/entity/hooks"
 	"github.com/k1nky/tookhook/pkg/thstrings"
-	"github.com/k1nky/tookhook/pkg/thstrings/restrings"
+	"github.com/k1nky/tookhook/pkg/thstrings/tstrings"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,24 +14,28 @@ func TestActions_Execute(t *testing.T) {
 	tests := []struct {
 		name       string
 		a          Actions
-		data       []byte
+		h          *hooks.Hook
 		wantError  error
 		wantResult []byte
 	}{
 		{
-			name:       "Not match",
-			data:       []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
+			name: "Not match",
+			h: &hooks.Hook{
+				RawBody: []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
+			},
 			wantError:  entity.ErrNotMatch,
 			wantResult: []byte(`{"@timestamp": "2024-07-11T12:40:31.574Z", "level": "INFO", "port": 37628, "host.name": "hostname", "message": "Select 1", "type": "app_log"}`),
 			a: Actions{
 				&Action{
-					On: *restrings.New("NOT_MATCH"),
+					On: *tstrings.New(`{{ . | ifMatch "NOT_MATCH" }}`),
 				},
 			},
 		},
 		{
-			name:      "Discard",
-			data:      []byte(`{"name": "Name", "data": "My Data"}`),
+			name: "Discard",
+			h: &hooks.Hook{
+				RawBody: []byte(`{"name": "Name", "data": "My Data"}`),
+			},
 			wantError: entity.ErrDiscard,
 			a: Actions{
 				&Action{
@@ -42,9 +47,9 @@ func TestActions_Execute(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.a.Compile()
-			got, err := tt.a.Execute(tt.data)
-			assert.ErrorIs(t, err, tt.wantError)
-			assert.Equal(t, tt.wantResult, got)
+			got, err := tt.a.Execute(tt.h)
+			assert.ErrorIs(t, err, tt.wantError, tt.name)
+			assert.Equal(t, tt.wantResult, got, tt.name)
 		})
 	}
 }
@@ -65,7 +70,7 @@ func TestActions_Compile(t *testing.T) {
 			name: "Invalid On value",
 			a: Actions{
 				&Action{
-					On: *restrings.New(")"),
+					On: *tstrings.New("{{}"),
 				},
 			},
 			wantError: thstrings.ErrCompile,
@@ -74,7 +79,7 @@ func TestActions_Compile(t *testing.T) {
 			name: "Valid On value",
 			a: Actions{
 				&Action{
-					On: *restrings.New(".*"),
+					On: *tstrings.New(".*"),
 				},
 			},
 		},
@@ -82,7 +87,7 @@ func TestActions_Compile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.a.Compile()
-			assert.ErrorIs(t, got, tt.wantError)
+			assert.ErrorIs(t, got, tt.wantError, tt.name)
 		})
 	}
 

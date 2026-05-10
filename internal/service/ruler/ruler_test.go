@@ -27,15 +27,15 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *rules.Hook
+		want   *rules.Endpoint
 	}{
 		{
 			name: "not found",
 			fields: fields{
 				rules: &rules.Rules{
-					Hooks: []rules.Hook{
+					Endpoints: []rules.Endpoint{
 						{
-							Income: "first",
+							Name: "first",
 						},
 					},
 				},
@@ -50,9 +50,9 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 			name: "found",
 			fields: fields{
 				rules: &rules.Rules{
-					Hooks: []rules.Hook{
-						{Income: "first"},
-						{Income: "second"},
+					Endpoints: []rules.Endpoint{
+						{Name: "first"},
+						{Name: "second"},
 					},
 				},
 			},
@@ -60,7 +60,7 @@ func TestServiceGetIncomeHookByName(t *testing.T) {
 				ctx:  context.TODO(),
 				name: "second",
 			},
-			want: &rules.Hook{Income: "second"},
+			want: &rules.Endpoint{Name: "second"},
 		},
 	}
 	for _, tt := range tests {
@@ -93,9 +93,9 @@ func (suite *serviceValidateSuite) SetupTest() {
 
 func (suite *serviceValidateSuite) TestInvalidBaseStructure() {
 	rules := &rules.Rules{
-		Hooks: []rules.Hook{
+		Endpoints: []rules.Endpoint{
 			{
-				Income: "",
+				Name: "",
 				Handlers: []*rules.Handler{
 					{
 						Type: "plugin_name",
@@ -111,9 +111,9 @@ func (suite *serviceValidateSuite) TestInvalidBaseStructure() {
 
 func (suite *serviceValidateSuite) TestValidate() {
 	rules := &rules.Rules{
-		Hooks: []rules.Hook{
+		Endpoints: []rules.Endpoint{
 			{
-				Income: "Rule1",
+				Name: "Rule1",
 				Handlers: []*rules.Handler{
 					{
 						Type: "plugin_name",
@@ -174,8 +174,8 @@ func (suite *serviceLoadSuite) SetupTest() {
 
 func (suite *serviceLoadSuite) TestGetRulesFailed() {
 	before := &rules.Rules{
-		Hooks: []rules.Hook{
-			{Income: "Rule1"},
+		Endpoints: []rules.Endpoint{
+			{Name: "Rule1"},
 		},
 	}
 	suite.svc.rules = before
@@ -187,14 +187,14 @@ func (suite *serviceLoadSuite) TestGetRulesFailed() {
 
 func (suite *serviceLoadSuite) TestValidateFailed() {
 	before := &rules.Rules{
-		Hooks: []rules.Hook{
-			{Income: "Rule1"},
+		Endpoints: []rules.Endpoint{
+			{Name: "Rule1"},
 		},
 	}
 	suite.svc.rules = before
 	suite.store.EXPECT().GetRules(gomock.Any()).Return(&rules.Rules{
-		Hooks: []rules.Hook{
-			{Income: ""},
+		Endpoints: []rules.Endpoint{
+			{Name: ""},
 		},
 	}, nil)
 	err := suite.svc.Load(context.TODO())
@@ -204,13 +204,13 @@ func (suite *serviceLoadSuite) TestValidateFailed() {
 
 func (suite *serviceLoadSuite) TestSuccess() {
 	before := &rules.Rules{
-		Hooks: []rules.Hook{
-			{Income: "Rule1"},
+		Endpoints: []rules.Endpoint{
+			{Name: "Rule1"},
 		},
 	}
 	after := &rules.Rules{
-		Hooks: []rules.Hook{
-			{Income: "Rule2"},
+		Endpoints: []rules.Endpoint{
+			{Name: "Rule2"},
 		},
 	}
 	suite.svc.rules = before
