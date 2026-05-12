@@ -1,28 +1,64 @@
+// Package builtin provides built-in handler implementations.
 package builtin
 
 import (
 	"context"
+	"log/slog"
 
-	"github.com/k1nky/tookhook/pkg/plugin"
+	"github.com/k1nky/tookhook/internal/domain/template"
 )
 
+// LogHandler is a built-in handler that logs data.
 type LogHandler struct {
-	builtinPlugin
+	logger *slog.Logger
+	level  slog.Level
 }
 
-func NewLogHandler(log logger) *LogHandler {
+// NewLogHandler creates a new log handler.
+func NewLogHandler(logger *slog.Logger) *LogHandler {
 	return &LogHandler{
-		builtinPlugin: builtinPlugin{
-			Logger: log,
-		},
+		logger: logger,
+		level:  slog.LevelInfo,
 	}
 }
 
-func (h *LogHandler) Validate(ctx context.Context, r plugin.Handler) error {
-	return nil
+// Name returns the handler name.
+func (h *LogHandler) Name() string {
+	return "~log"
 }
 
-func (h *LogHandler) Forward(ctx context.Context, r plugin.Handler, data []byte) ([]byte, error) {
-	h.Logger.Infof("%s", data)
-	return nil, nil
+// Execute logs the input data and returns it unchanged.
+func (h *LogHandler) Execute(ctx context.Context, input []byte, opts map[string]any) ([]byte, error) {
+	level := h.level
+	if lvlStr, ok := opts["level"].(string); ok {
+		switch lvlStr {
+		case "debug":
+			level = slog.LevelDebug
+		case "info":
+			level = slog.LevelInfo
+		case "warn":
+			level = slog.LevelWarn
+		case "error":
+			level = slog.LevelError
+		}
+	}
+
+	// Check if custom message template is provided
+	if msgTpl, ok := opts["message"].(string); ok && msgTpl != "" {
+		tpl := template.New(msgTpl)
+		if err := tpl.Compile(); err != nil {
+			h.logger.Error("failed to compile message template", "error", err)
+			return input, nil
+		}
+		message, err := tpl.Execute(input)
+		if err != nil {
+			h.logger.Error("failed to execute message template", "error", err)
+			return input, nil
+		}
+		h.logger.Log(ctx, level, message)
+	} else {
+		h.logger.Log(ctx, level, "handler log", "payload", string(input))
+	}
+
+	return input, nil
 }

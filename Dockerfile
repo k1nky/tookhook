@@ -1,30 +1,38 @@
-FROM mirror.gcr.io/golang:1.24.4 AS build
+# Build stage
+FROM golang:1.26-alpine AS builder
 
-RUN apt-get update \
-    && apt install unzip \
-    && wget https://github.com/protocolbuffers/protobuf/releases/download/v27.2/protoc-27.2-linux-x86_64.zip \
-    && unzip protoc-27.2-linux-x86_64.zip
+RUN apk add --no-cache git make
 
+WORKDIR /app
 
-WORKDIR /src
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
 
+# Copy source code
 COPY . .
 
-RUN apt-get update && apt install -y protobuf-compiler
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /tookhook ./cmd/tookhook
 
-RUN make prepare
-RUN make clean addplugins build plugin
+# Final stage
+FROM alpine:3.19
 
-FROM mirror.gcr.io/alpine:3.19
+RUN apk add --no-cache ca-certificates tzdata
 
-LABEL org.opencontainers.image.source="https://github.com/k1nky/tookhook"
-LABEL org.opencontainers.image.description="TookHook is a webhook server with pluggable handlers."
-LABEL org.opencontainers.image.licenses="Apache 2.0"
+WORKDIR /app
 
-RUN apk add --no-cache tzdata
+# Copy binary from builder
+COPY --from=builder /tookhook /app/tookhook
 
-COPY --from=build /src/build/* /app/
+# Copy default config
+COPY config/config.example.yaml /app/config/config.yaml
+
+# Create non-root user
+RUN adduser -D -u 1000 tookhook
+USER tookhook
 
 EXPOSE 8080
 
-CMD ["/app/tookhook", "run"]
+ENTRYPOINT ["/app/tookhook"]
+CMD ["serve", "--config", "/app/config/config.yaml"]

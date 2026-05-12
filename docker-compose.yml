@@ -1,34 +1,42 @@
 services:
   tookhook:
-    environment:
-      TOOKHOOK_LISTEN: 0.0.0.0:8080
-      TOOKHOOK_LOG_LEVEL: debug
-      TOOKHOOK_PLUGINS: /app/pachca /app/telegram
-      TOOKHOOK_DATABASE_URI: file:///app/config/hooks.yml
-      TOOKHOOK_QUEUE_URI: redis:6379
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - 8080:8080
-    image: k1nky/tookhook:latest
+      - "8080:8080"
     volumes:
       - ./config:/app/config:ro
+    environment:
+      - LOG_LEVEL=info
+      - SERVER_LISTEN=:8080
+      - QUEUE_ADDR=redis:6379
+      - QUEUE_DB=0
+      - QUEUE_CONCURRENCY=10
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   redis:
-    image: docker.io/redis:7-alpine
-    command:
-    - sh
-    - -c # this is to evaluate the $REDIS_PASSWORD from the env
-    - redis-server --appendonly yes
-    # - redis-server --appendonly yes --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
-    # env_file: env/redis.env
-    volumes:
-    - redis-data:/data
+    image: redis:7-alpine
     ports:
-      - 6379:6379
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
   asynqmon:
     image: hibiken/asynqmon:0.7.1
     ports:
       - 8088:8080
     command:
       - -redis-addr=redis:6379
+
 volumes:
-  redis-data:
-    driver: local
+  redis_data:

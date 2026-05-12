@@ -1,6 +1,0 @@
-[submodule "telegram"]
-	path = plugins/telegram
-	url = https://github.com/k1nky/tookhook-plugin-telegram.git
-[submodule "pachca"]
-	path = plugins/pachca
-	url = https://github.com/k1nky/tookhook-plugin-pachca.git
