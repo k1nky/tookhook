@@ -16,8 +16,9 @@ import (
 
 // JsHandler is a built-in handler that executes JavaScript code.
 type JsHandler struct {
-	logger *slog.Logger
-	pool   *sync.Pool
+	logger   *slog.Logger
+	pool     *sync.Pool
+	programs sync.Map // cache of compiled programs: code string -> *goja.Program
 }
 
 // NewJsHandler creates a new JavaScript handler.
@@ -151,10 +152,17 @@ func (h *JsHandler) Execute(ctx context.Context, input []byte, opts map[string]a
 	// Make options available to JavaScript
 	vm.Set("Options", opts)
 
-	// Parse and compile the script
-	_, err := vm.RunString(code)
+	// Get or compile the program
+	program, err := h.getOrCompileProgram(code)
 	if err != nil {
 		h.logger.Error("js handler: failed to compile script", "error", err)
+		return input, nil
+	}
+
+	// Run the compiled program
+	_, err = vm.RunProgram(program)
+	if err != nil {
+		h.logger.Error("js handler: failed to run script", "error", err)
 		return input, nil
 	}
 
@@ -173,4 +181,22 @@ func (h *JsHandler) Execute(ctx context.Context, input []byte, opts map[string]a
 	}
 
 	return jsonResult, nil
+}
+
+// getOrCompileProgram returns a cached compiled program or compiles and caches it.
+func (h *JsHandler) getOrCompileProgram(code string) (*goja.Program, error) {
+	// Try to get from cache first
+	if val, ok := h.programs.Load(code); ok {
+		return val.(*goja.Program), nil
+	}
+
+	// Compile new program
+	program, err := goja.Compile("", code, false)
+	if err != nil {
+		return nil, err
+	}
+
+	// Store in cache
+	h.programs.Store(code, program)
+	return program, nil
 }
