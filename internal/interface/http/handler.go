@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/k1nky/tookhook/internal/domain/entity"
 )
 
@@ -49,6 +50,7 @@ func (s *Server) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		Payload:      body,
 		ContentType:  r.Header.Get("Content-Type"),
 		Headers:      r.Header,
+		ID:           middleware.GetReqID(r.Context()),
 	}
 
 	// Enqueue task

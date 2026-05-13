@@ -1,18 +1,17 @@
 services:
   tookhook:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/k1nky/tookhook:v1.0.0-pre
     ports:
       - "8080:8080"
     volumes:
       - ./config:/app/config:ro
     environment:
-      - LOG_LEVEL=info
-      - SERVER_LISTEN=:8080
-      - QUEUE_ADDR=redis:6379
-      - QUEUE_DB=0
-      - QUEUE_CONCURRENCY=10
+      - TOOKHOOK_LOG_LEVEL=info
+      - TOOKHOOK_SERVER_LISTEN=:8080
+      - TOOKHOOK_QUEUE_ADDR=redis:6379
+      - TOOKHOOK_QUEUE_DB=0
+      - TOOKHOOK_QUEUE_CONCURRENCY=10
+      - TOOKHOOK_CONFIG=/app/config/config.example.yaml
     depends_on:
       redis:
         condition: service_healthy

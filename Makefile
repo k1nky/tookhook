@@ -11,7 +11,7 @@ GIT_COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 LDFLAGS=-ldflags "-w -s -X main.buildVersion=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.buildCommit=$(GIT_COMMIT)"
 
 # Docker
-DOCKER_IMAGE=tookhook2
+DOCKER_IMAGE=ghcr.io/k1nky/tookhook
 DOCKER_TAG?=latest
 
 # Build the binary
@@ -77,3 +77,10 @@ check: fmt test lint
 
 # Development setup
 dev: deps build
+
+# Development setup
+prepare:
+	go mod tidy
+	go install go.uber.org/mock/mockgen@v0.6.0
+	go install honnef.co/go/tools/cmd/staticcheck@v0.7.0
+	go get github.com/mailru/easyjson && go install github.com/mailru/easyjson/...@v0.9.2

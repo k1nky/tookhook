@@ -15,6 +15,8 @@ type WebhookTask struct {
 	Headers map[string][]string `json:"headers,omitempty"`
 	// ContentType is the content-type of the original request.
 	ContentType string `json:"content_type,omitempty"`
+	// ID is the unique request ID.
+	ID string `json:"id"`
 }
 
 // Marshal serializes the webhook task to JSON bytes.

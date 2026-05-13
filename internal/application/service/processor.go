@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/k1nky/tookhook/internal/builtin"
 	"github.com/k1nky/tookhook/internal/domain/entity"
@@ -63,13 +64,22 @@ func (p *Processor) ProcessWebhook(ctx context.Context, endpoint *entity.Endpoin
 		}
 
 		// Execute chain synchronously (can be parallelized later)
-		if err := p.executeChain(ctx, chain, task.Payload, task.ContentType, task.Headers); err != nil {
+		start := time.Now()
+		if err := p.executeChain(ctx, chain, task); err != nil {
 			p.logger.Error("chain execution failed",
 				"endpoint", endpoint.Name,
 				"chain", chainIdx,
 				"error", err,
+				"task_id", task.ID,
 			)
 			// Continue processing other chains even if one fails
+		} else {
+			p.logger.Info("chain execution finished",
+				"endpoint", endpoint.Name,
+				"chain", chainIdx,
+				"task_id", task.ID,
+				"duration_ms", time.Since(start).Milliseconds(),
+			)
 		}
 	}
 
@@ -77,8 +87,9 @@ func (p *Processor) ProcessWebhook(ctx context.Context, endpoint *entity.Endpoin
 }
 
 // executeChain executes a single chain of handlers sequentially (pipeline).
-func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, input []byte, contentType string, headers map[string][]string) error {
-	data := input
+// func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, input []byte, contentType string, headers map[string][]string) error {
+func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, task *entity.WebhookTask) error {
+	data := task.Payload
 
 	for handlerIdx := range chain.Handlers {
 		h := &chain.Handlers[handlerIdx]
@@ -92,7 +103,7 @@ func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, input
 
 		// Check handler condition
 		if h.On != nil {
-			matched, err := h.On.Match(data, contentType, headers)
+			matched, err := h.On.Match(data, task.ContentType, task.Headers)
 			if err != nil {
 				p.logger.Error("handler condition evaluation failed",
 					"type", h.Type,
@@ -114,6 +125,7 @@ func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, input
 			p.logger.Error("handler not found",
 				"type", h.Type,
 				"error", err,
+				"task_id", task.ID,
 			)
 			return err
 		}
@@ -124,6 +136,7 @@ func (p *Processor) executeChain(ctx context.Context, chain *entity.Chain, input
 			p.logger.Error("handler execution failed",
 				"type", h.Type,
 				"error", err,
+				"task_id", task.ID,
 			)
 			return err
 		}

@@ -4,6 +4,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -25,8 +26,32 @@ type AsynqQueue struct {
 	concurrency int
 }
 
+type AsynqLogWrapper struct {
+	logger *slog.Logger
+}
+
+func (l AsynqLogWrapper) Debug(args ...any) {
+	l.logger.Debug(fmt.Sprint(args...))
+}
+
+func (l AsynqLogWrapper) Info(args ...any) {
+	l.logger.Info(fmt.Sprint(args...))
+}
+
+func (l AsynqLogWrapper) Warn(args ...any) {
+	l.logger.Warn(fmt.Sprint(args...))
+}
+
+func (l AsynqLogWrapper) Error(args ...any) {
+	l.logger.Error(fmt.Sprint(args...))
+}
+
+func (l AsynqLogWrapper) Fatal(args ...any) {
+	l.logger.Error(fmt.Sprint(args...))
+}
+
 // NewAsynqQueue creates a new asynq-based queue.
-func NewAsynqQueue(addr string, db int, concurrency int) *AsynqQueue {
+func NewAsynqQueue(addr string, db int, concurrency int, logger *slog.Logger) *AsynqQueue {
 	redisOpt := asynq.RedisClientOpt{
 		Addr: addr,
 		DB:   db,
@@ -40,6 +65,7 @@ func NewAsynqQueue(addr string, db int, concurrency int) *AsynqQueue {
 				// Exponential backoff: 10s, 20s, 40s, ...
 				return time.Duration(10*(1<<uint(n))) * time.Second
 			},
+			Logger: AsynqLogWrapper{logger},
 		}),
 		mux:         asynq.NewServeMux(),
 		concurrency: concurrency,

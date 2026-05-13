@@ -86,19 +86,19 @@ func runServer(cmd *cobra.Command, args []string) {
 	defer stop()
 
 	// Initialize task queue (Asynq)
-	taskQueue := queue.NewAsynqQueue(queueAddr, queueDB, queueConcurrency)
+	taskQueue := queue.NewAsynqQueue(queueAddr, queueDB, queueConcurrency, logger.With("component", "asynq"))
 	defer taskQueue.Close()
 
 	logger.Info("task queue initialized")
 
 	// Initialize handler registry and processor
 	handlerRegistry := builtin.NewRegistry(logger)
-	processor := service.NewProcessor(handlerRegistry, logger)
+	processor := service.NewProcessor(handlerRegistry, logger.With("component", "processor"))
 
 	logger.Info("handler registry initialized", "handlers", handlerRegistry.Names())
 
 	// Initialize HTTP server
-	httpServer := http.NewServer(serverListen, endpointRepo, taskQueue, logger)
+	httpServer := http.NewServer(serverListen, endpointRepo, taskQueue, logger.With("component", "http"))
 	if err := httpServer.Start(ctx); err != nil {
 		logger.Error("failed to start HTTP server", "error", err)
 		os.Exit(1)

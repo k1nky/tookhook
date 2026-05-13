@@ -14,7 +14,7 @@ import (
 // If the condition evaluates to true, the chain/handler is executed.
 type Condition struct {
 	// Expr is the CEL expression string.
-	Expr string `yaml:"on"`
+	Expr string
 	// program is the compiled CEL program.
 	program cel.Program
 	// env is the CEL environment.
@@ -42,38 +42,38 @@ func (c *Condition) Compile() error {
 		cel.Variable("payload", cel.DynType),
 		cel.Variable("headers", cel.MapType(cel.StringType, cel.ListType(cel.StringType))),
 		// String functions
-		cel.Function("startsWith", cel.MemberOverload(
-			"string_starts_with",
-			[]*cel.Type{cel.StringType, cel.StringType},
-			cel.BoolType,
-		)),
-		cel.Function("endsWith", cel.MemberOverload(
-			"string_ends_with",
-			[]*cel.Type{cel.StringType, cel.StringType},
-			cel.BoolType,
-		)),
-		cel.Function("contains", cel.MemberOverload(
-			"string_contains",
-			[]*cel.Type{cel.StringType, cel.StringType},
-			cel.BoolType,
-		)),
-		// Size/length function
-		cel.Function("size", cel.Overload(
-			"size",
-			[]*cel.Type{cel.DynType},
-			cel.IntType,
-		)),
-		// Type conversion helpers
-		cel.Function("bytesToString", cel.Overload(
-			"bytes_to_string",
-			[]*cel.Type{cel.BytesType},
-			cel.StringType,
-		)),
-		cel.Function("stringToBytes", cel.Overload(
-			"string_to_bytes",
-			[]*cel.Type{cel.StringType},
-			cel.BytesType,
-		)),
+		// cel.Function("startsWith", cel.MemberOverload(
+		// 	"string_starts_with",
+		// 	[]*cel.Type{cel.StringType, cel.StringType},
+		// 	cel.BoolType,
+		// )),
+		// cel.Function("endsWith", cel.MemberOverload(
+		// 	"string_ends_with",
+		// 	[]*cel.Type{cel.StringType, cel.StringType},
+		// 	cel.BoolType,
+		// )),
+		// cel.Function("contains", cel.MemberOverload(
+		// 	"string_contains",
+		// 	[]*cel.Type{cel.StringType, cel.StringType},
+		// 	cel.BoolType,
+		// )),
+		// // Size/length function
+		// cel.Function("size", cel.Overload(
+		// 	"size",
+		// 	[]*cel.Type{cel.DynType},
+		// 	cel.IntType,
+		// )),
+		// // Type conversion helpers
+		// cel.Function("bytesToString", cel.Overload(
+		// 	"bytes_to_string",
+		// 	[]*cel.Type{cel.BytesType},
+		// 	cel.StringType,
+		// )),
+		// cel.Function("stringToBytes", cel.Overload(
+		// 	"string_to_bytes",
+		// 	[]*cel.Type{cel.StringType},
+		// 	cel.BytesType,
+		// )),
 	)
 	if err != nil {
 		return fmt.Errorf("create CEL env: %w", err)

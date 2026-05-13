@@ -49,19 +49,30 @@ func (cc *ChainConfig) toEntity() (*entity.Chain, error) {
 		}
 		handlers = append(handlers, *handler)
 	}
+	cond := entity.NewCondition(cc.On)
+	if err := cond.Compile(); err != nil {
+		return nil, err
+	}
 
 	return &entity.Chain{
 		Handlers: handlers,
 		Disabled: cc.Disabled,
+		On:       cond,
 	}, nil
 }
 
 // toEntity converts HandlerConfig to entity.Handler.
 func (hc *HandlerConfig) toEntity() (*entity.Handler, error) {
+	cond := entity.NewCondition(hc.On)
+	if err := cond.Compile(); err != nil {
+		return nil, err
+	}
+
 	return &entity.Handler{
 		Type:     hc.Type,
 		Options:  hc.Options,
 		Disabled: hc.Disabled,
+		On:       cond,
 	}, nil
 }
 

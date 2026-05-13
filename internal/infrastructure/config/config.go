@@ -29,6 +29,9 @@ type ChainConfig struct {
 	Handlers []HandlerConfig `yaml:"handlers"`
 	// Disabled indicates whether the chain is disabled.
 	Disabled bool `yaml:"disabled"`
+	// On is the CEL condition for the chain.
+	// If specified, the chain is only executed if the condition evaluates to true.
+	On string `yaml:"on"`
 }
 
 // HandlerConfig represents a handler configuration.
@@ -39,6 +42,9 @@ type HandlerConfig struct {
 	Options map[string]any `yaml:"options"`
 	// Disabled indicates whether the handler is disabled.
 	Disabled bool `yaml:"disabled"`
+	// On is the CEL condition for the handler.
+	// If specified, the handler is only executed if the condition evaluates to true.
+	On string `yaml:"on"`
 }
 
 // Load reads configuration from a YAML file.

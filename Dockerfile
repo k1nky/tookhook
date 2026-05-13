@@ -35,4 +35,4 @@ USER tookhook
 EXPOSE 8080
 
 ENTRYPOINT ["/app/tookhook"]
-CMD ["serve", "--config", "/app/config/config.yaml"]
+CMD ["run"]
